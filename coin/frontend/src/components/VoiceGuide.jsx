@@ -101,6 +101,5 @@ export default function VoiceGuide({ open, onClose, onSelectSymbol, onDeploy, bu
       {answer.requested_amount && <div className={`guide-safety ${answer.firewall_status?.passed ? 'passed' : 'rejected'}`}>{answer.firewall_status?.passed ? <ShieldCheck size={17}/> : <ShieldX size={17}/>}<span>{answer.firewall_status?.passed ? 'Safety check passed' : answer.firewall_status?.reasons?.join(' · ')}</span></div>}
       {answer.proposal && <button className="guide-deploy" disabled={!canDeploy || !answer.firewall_status?.passed || working || !!busy} onClick={() => onDeploy(answer.proposal)}>Deploy ${answer.requested_amount?.toFixed(2)} paper order <ArrowUpRight size={17}/></button>}
     </div>}
-    <p className="guide-note">Market data and AI analysis can be incomplete. Orders use your saved limits and Alpaca paper account.</p>
   </div>;
 }

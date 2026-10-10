@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv(Path(__file__).with_name(".env"))
 
 from api.routes import router  # noqa: E402 - load credentials before importing adapters
+from api.coinbot import router as coinbot_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -29,6 +30,9 @@ async def lifespan(app):
             stop.wait(60)
     thread = Thread(target=worker, daemon=True, name='coin-learning')
     thread.start()
+    from engine.coinbot import run as run_coinbot
+    bot_thread = Thread(target=run_coinbot, args=(stop,), daemon=True, name='coinbot-demo')
+    bot_thread.start()
     yield
     stop.set()
 
@@ -41,6 +45,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 app.include_router(router)
+app.include_router(coinbot_router)
 
 
 @app.get("/", include_in_schema=False)

@@ -10,12 +10,16 @@ BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
 def complete(prompt: str, *, json_mode: bool = False, temperature: float = 0.15,
-             prefer_secondary: bool = False) -> str:
+             prefer_secondary: bool = False, prefer_tertiary: bool = False) -> str:
     keys = [value for value in (os.getenv("GEMINI_API_KEY", "").strip(),
-                                os.getenv("GEMINI_API_KEY_SECONDARY", "").strip()) if value]
+                                os.getenv("GEMINI_API_KEY_SECONDARY", "").strip(),
+                                os.getenv("GEMINI_API_KEY_TERTIARY", "").strip()) if value]
     keys = list(dict.fromkeys(keys))
-    if prefer_secondary and len(keys) > 1:
-        keys.reverse()
+    preferred = (os.getenv("GEMINI_API_KEY_TERTIARY", "").strip() if prefer_tertiary else
+                 os.getenv("GEMINI_API_KEY_SECONDARY", "").strip() if prefer_secondary else "")
+    if preferred in keys:
+        index = keys.index(preferred)
+        keys = keys[index:] + keys[:index]
     if not keys:
         raise RuntimeError("GEMINI_API_KEY is not configured")
     model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")

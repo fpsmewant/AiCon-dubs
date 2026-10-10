@@ -176,6 +176,10 @@ def account_snapshot(broker: IBroker) -> dict[str, Any]:
     return account
 
 
+def portfolio_snapshot(broker: IBroker) -> dict[str, Any]:
+    return {"positions": broker.get_positions(), "orders": broker.get_recent_orders()}
+
+
 def review(proposal: TradeProposal, mandate: UserMandate, broker: IBroker) -> FirewallVerdict:
     return RiskFirewall().validate(proposal, mandate, account_snapshot(broker))
 

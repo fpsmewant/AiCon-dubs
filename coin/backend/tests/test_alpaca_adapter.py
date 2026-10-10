@@ -23,3 +23,18 @@ def test_bracket_limit_order_is_submitted_without_network():
     assert captured[0].limit_price == 100
     assert captured[0].take_profit.limit_price == 110
     assert captured[0].stop_loss.stop_price == 95
+
+
+def test_recent_orders_are_exposed_without_waiting_for_fills():
+    class TradingStub:
+        def get_orders(self, filter):
+            return [SimpleNamespace(id="paper-123", symbol="AAPL", side=SimpleNamespace(value="buy"),
+                                    status=SimpleNamespace(value="accepted"), qty="1", filled_qty="0",
+                                    limit_price="100.00", submitted_at=None)]
+
+    broker = AlpacaClient.__new__(AlpacaClient)
+    broker.client = TradingStub()
+    assert broker.get_recent_orders()[0] == {
+        "id": "paper-123", "symbol": "AAPL", "side": "buy", "status": "accepted",
+        "qty": 1.0, "filled_qty": 0.0, "limit_price": 100.0, "submitted_at": None,
+    }

@@ -31,21 +31,21 @@ export default function InkOrbitFeatures({ ticker, phase = "idle", sources = {},
   const bearReady = !!bear && !bear.includes("analysis unavailable")
   const working = ["fetching", "debating", "judging"].includes(phase)
 
-  return <section className="coin-workflow section" aria-label={`${ticker} analysis workflow`} aria-busy={working}>
+  return <section className="coin-workflow" aria-label={`${ticker} analysis workflow`} aria-busy={working}>
     <div className="section-heading"><div><span className="small-label">COIN / SIGNAL PATH</span><h2>How the decision forms</h2></div><StockSymbol ticker={ticker}/></div>
     <div className="coin-workflow-grid">
       <div className="coin-workflow-card" data-active={phase === "fetching"}>
         <div className="coin-workflow-card-head"><span>01 / GATHER</span><Database size={16}/></div>
         <div className="coin-source-map">
-          <span className={sources.alpaca ? "active" : ""}><TrendingUp size={17}/>Alpaca<small>{sources.alpaca ? "Price received" : "Waiting"}</small></span>
-          <span className={sources.marketaux ? "active" : ""}><Newspaper size={17}/>Marketaux<small>{sources.marketaux ? `${sources.marketaux} cached stories` : "No stories"}</small></span>
-          <span className={sources.liquid ? "active" : ""}><BookOpen size={17}/>Liquid<small>{sources.liquid ? `${sources.liquid} memory matches` : "No matches"}</small></span>
+          <span className={sources.alpaca ? "active" : ""}><TrendingUp size={17}/>Price<small>{sources.alpaca ? "Received" : "Waiting"}</small></span>
+          <span className={sources.marketaux ? "active" : ""}><Newspaper size={17}/>News<small>{sources.marketaux ? `${sources.marketaux} stories` : "No stories"}</small></span>
+          <span className={sources.liquid ? "active" : ""}><BookOpen size={17}/>Memory<small>{sources.liquid ? `${sources.liquid} matches` : "No matches"}</small></span>
         </div>
         <p>Live price, cached headlines, and retrieved memory feed the analysts.</p>
       </div>
       <div className="coin-workflow-card" data-active={phase === "debating"}>
         <div className="coin-workflow-card-head"><span>02 / DEBATE</span><BrainCircuit size={16}/></div>
-        <div className="coin-debate-map"><span className={bullReady ? "active" : ""}><TrendingUp size={18}/><b>Bull</b><small>Gemini</small></span><ArrowRight size={18}/><span className={bearReady ? "active" : ""}><TrendingDown size={18}/><b>Bear</b><small>Groq</small></span></div>
+        <div className="coin-debate-map"><span className={bullReady ? "active" : ""}><TrendingUp size={18}/><b>Bull</b></span><ArrowRight size={18}/><span className={bearReady ? "active" : ""}><TrendingDown size={18}/><b>Bear</b></span></div>
         <p>{bullReady && bearReady ? "Both cases delivered to the judge." : "Independent upside and downside cases are being gathered."}</p>
       </div>
       <div className="coin-workflow-card" data-active={phase === "judging" || phase === "ready"}>

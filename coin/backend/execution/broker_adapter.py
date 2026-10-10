@@ -18,3 +18,7 @@ class IBroker(ABC):
 
     @abstractmethod
     def cancel_order(self, order_id: str) -> None: ...
+
+    def get_recent_orders(self) -> list[dict[str, Any]]:
+        """Optional read-only order activity for portfolio views."""
+        return []

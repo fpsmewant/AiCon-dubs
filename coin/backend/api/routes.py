@@ -49,6 +49,14 @@ def account(broker: IBroker = Depends(get_broker)) -> dict:
         raise HTTPException(status_code=502, detail="Alpaca account sync failed. Check paper credentials and network access.") from exc
 
 
+@router.get("/portfolio")
+def portfolio(broker: IBroker = Depends(get_broker)) -> dict:
+    try:
+        return orchestrator.portfolio_snapshot(broker)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Alpaca portfolio sync failed. Please retry.") from exc
+
+
 @router.get("/mandate", response_model=UserMandate)
 def get_mandate(mandate: UserMandate = Depends(required_mandate)) -> UserMandate:
     return mandate

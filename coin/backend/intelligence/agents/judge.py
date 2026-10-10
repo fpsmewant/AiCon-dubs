@@ -39,7 +39,7 @@ def propose(symbol: str, price: float, bull: str, bear: str, news: list[dict] | 
         if lessons:
             prompt += f" Similar historical losses: {json.dumps(lessons)}. Lower confidence and explain why this setup may repeat those losses."
         try:
-            output = gemini_complete(prompt, temperature=0.1, json_mode=True)
+            output = gemini_complete(prompt, temperature=0.1, json_mode=True, prefer_tertiary=True)
         except Exception:
             output = complete(prompt, temperature=0.1, json_mode=True)
         terms = JudgeTerms.model_validate(json.loads(output))

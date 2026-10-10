@@ -4,8 +4,8 @@ import os
 from typing import Any
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce
-from alpaca.trading.requests import LimitOrderRequest, StopLossRequest, TakeProfitRequest, GetOrderByIdRequest
+from alpaca.trading.enums import OrderClass, OrderSide, QueryOrderStatus, TimeInForce
+from alpaca.trading.requests import LimitOrderRequest, StopLossRequest, TakeProfitRequest, GetOrderByIdRequest, GetOrdersRequest
 
 from execution.broker_adapter import IBroker
 from intelligence.generators import TradeProposal
@@ -41,6 +41,20 @@ class AlpacaClient(IBroker):
             }
             for position in self.client.get_all_positions()
         ]
+
+    def get_recent_orders(self) -> list[dict[str, Any]]:
+        orders = self.client.get_orders(filter=GetOrdersRequest(
+            status=QueryOrderStatus.ALL, limit=20, nested=True))
+        return [{
+            "id": str(order.id),
+            "symbol": order.symbol,
+            "side": order.side.value,
+            "status": order.status.value,
+            "qty": float(order.qty or 0),
+            "filled_qty": float(order.filled_qty or 0),
+            "limit_price": float(order.limit_price) if order.limit_price else None,
+            "submitted_at": order.submitted_at.isoformat() if order.submitted_at else None,
+        } for order in orders]
 
     def place_order(self, proposal: TradeProposal) -> dict[str, Any]:
         common = dict(

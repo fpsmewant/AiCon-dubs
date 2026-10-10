@@ -17,6 +17,7 @@ async function request(path, options = {}) {
 export const api = {
   market: () => request('/market'),
   account: () => request('/account'),
+  portfolio: () => request('/portfolio'),
   mandate: () => request('/mandate'),
   saveMandate: (mandate) => request('/mandate', { method: 'POST', body: JSON.stringify(mandate) }),
   analyze: (symbol) => request(`/analyze/${encodeURIComponent(symbol)}`, { method: 'POST' }),
@@ -43,4 +44,8 @@ export const api = {
   guide: (prompt, filters = {}) => request('/guide', { method: 'POST', body: JSON.stringify({ prompt, countries: filters.countries || '', symbols: filters.symbols || '' }) }),
   validate: (proposal) => request('/validate', { method: 'POST', body: JSON.stringify(proposal) }),
   execute: (proposal, approved) => request('/execute', { method: 'POST', body: JSON.stringify({ proposal, approved }) }),
+  coinbotStatus: () => request('/coinbot/status'),
+  coinbotStart: (config) => request('/coinbot/start', { method: 'POST', body: JSON.stringify(config) }),
+  coinbotStop: () => request('/coinbot/stop', { method: 'POST' }),
+  coinbotClose: () => request('/coinbot/close', { method: 'POST' }),
 };

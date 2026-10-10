@@ -42,3 +42,85 @@
 @media(max-width:850px){.coin-workflow-grid{grid-template-columns:1fr}.coin-workflow-card{min-height:0}.coin-source-map{justify-content:flex-start;gap:25px}.coin-debate-map,.coin-decision-map{justify-content:flex-start;margin-top:16px}}
 @media(max-width:480px){.coin-workflow-footer{flex-wrap:wrap}.coin-workflow-spark{margin-left:0}.guide-personality{min-height:105px}.coin-ghost{flex-basis:70px;width:70px}.coin-ghost-compact{flex-basis:46px;width:46px}}
 @media(prefers-reduced-motion:reduce){.coin-thinking-banner,.coin-workflow-pulse{animation:none}.coin-workflow-card{transition:none}}
+
+.coin-workflow{padding:17px;margin:20px 0 2px;border:1px solid #3a4740;border-radius:6px}
+.opportunities{background:radial-gradient(circle at 85% 0,#263527 0,#171b1c 52%)}
+.opportunities .section-heading{margin-bottom:10px}.opportunities .section-heading h2{font-size:20px;margin-top:5px}
+.opportunity-radar{color:#b7df83;animation:coin-radar 5s ease-in-out infinite}
+.opportunity-summary{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #394338;border-bottom:1px solid #394338;color:#b7d997;font:10px monospace;letter-spacing:.04em}
+.opportunity-summary span{display:flex;align-items:center;gap:7px}
+.opportunity-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.opportunity-card{position:relative;display:grid;grid-template-columns:27px 1fr auto 18px;align-items:center;gap:8px;min-width:0;padding:15px 13px 20px;text-align:left;background:#1e2622;border:1px solid #455748;border-radius:6px;color:#ecf2e9;overflow:hidden;transition:border-color .2s,background .2s,box-shadow .2s}
+.opportunity-card:hover,.opportunity-card:focus-visible{background:#28372a;border-color:#a4d375;box-shadow:0 0 0 1px #a4d37522}
+.opportunity-rank{font:11px monospace;color:#8fa28c;align-self:start;margin-top:3px}
+.opportunity-main,.opportunity-performance{display:flex;flex-direction:column;gap:5px;min-width:0}
+.opportunity-main b{font:700 14px monospace}.opportunity-main small,.opportunity-performance small{color:#95a498;font:9px/1.4 Arial,sans-serif;white-space:nowrap}
+.opportunity-performance{text-align:right}.opportunity-performance b{color:#c7e890;font:700 15px monospace}
+.opportunity-open{color:#b7df83;align-self:start}
+.opportunity-meter{position:absolute;bottom:0;left:0;right:0;height:3px;background:#344238}
+.opportunity-meter i{display:block;height:100%;background:linear-gradient(90deg,#678e68,#d1eb90);transform-origin:left}
+.opportunity-scanning{display:flex;align-items:center;gap:14px;padding:24px;border:1px dashed #668362;color:#c5deb0;font-size:12px}
+.orbit-scan{width:25px;height:25px;border:2px solid #617b58;border-top-color:#d8ed88;border-radius:50%;animation:coin-radar .8s linear infinite}
+@keyframes coin-radar{50%{transform:rotate(180deg);opacity:.65}100%{transform:rotate(360deg)}}
+
+#positions{scroll-margin-top:24px}
+.portfolio-panel{background:linear-gradient(145deg,#171c1f,#19211d)}
+.portfolio-panel .section-heading h2{margin-top:5px;font-size:20px}
+.portfolio-refresh{display:flex;align-items:center;gap:7px;color:var(--lime);border:1px solid #536744;border-radius:4px;padding:8px 10px;font:11px monospace}
+.portfolio-refresh:hover{background:#2a3829}.portfolio-error{color:#ffbaba;font-size:11px}
+.portfolio-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:17px 0}
+.portfolio-stats>div{padding:13px;background:#202922;border:1px solid #3a4a3c;border-radius:4px}
+.portfolio-stats small{display:block;color:#9eae9b;font:9px monospace;letter-spacing:.06em}
+.portfolio-stats b{display:block;margin-top:6px;font:23px monospace;color:#e3efca}
+.portfolio-group{margin-top:18px}.portfolio-group h3{display:flex;align-items:center;gap:9px;font-size:12px;color:#dfe8d7;margin:0;padding:0 0 9px;border-bottom:1px solid #3b493e}
+.portfolio-group h3 span{font:10px monospace;color:#9ab283}
+.portfolio-empty{padding:13px 4px;color:#929f99;font-size:11px;margin:0}
+.portfolio-row,.portfolio-order{display:grid;grid-template-columns:minmax(100px,1.1fr) 1fr 1fr 1fr;align-items:center;gap:10px;border-bottom:1px solid #323e36;padding:12px 4px;font:11px monospace}
+.portfolio-row>span:last-child{display:flex;align-items:center;justify-content:flex-end}.portfolio-row>strong{font-weight:500;text-align:right}
+.portfolio-order{grid-template-columns:minmax(100px,1.1fr) 1fr 1fr 1fr}.portfolio-order>span:nth-child(3){text-align:right}
+.portfolio-order>b{justify-self:end;display:flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid #6a5a42;border-radius:20px;color:#d4b77d;text-transform:capitalize;font:9px monospace;white-space:nowrap}
+.portfolio-order>b.working{color:#d6eaa4;border-color:#728b50}.portfolio-order>b.filled{color:#9cdaa9;border-color:#578b65}
+@media(max-width:850px){.opportunity-list{grid-template-columns:1fr}}
+@media(max-width:480px){.portfolio-stats{gap:5px}.portfolio-stats>div{padding:9px}.portfolio-stats small{font-size:8px}.portfolio-stats b{font-size:18px}.portfolio-row,.portfolio-order{grid-template-columns:1fr 1fr;gap:5px}.portfolio-row>strong,.portfolio-order>span:nth-child(3){text-align:left}.portfolio-order>b{justify-self:start}.opportunity-card{grid-template-columns:20px 1fr auto 16px}.opportunity-main small,.opportunity-performance small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.opportunity-radar,.orbit-scan{animation:none}.opportunity-card{transition:none}}
+
+.masthead .wordmark{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.masthead .wordmark>.coin-spinner{margin-left:0}
+.masthead .wordmark>span:last-child{margin-left:-7px}
+.coin-spinner{display:inline-block;flex:0 0 56px;width:56px;height:56px;border-radius:12px;background-color:#110b20;background-image:url('/coin-spin-sprite.jpg');background-size:557.28px 168px;background-position:-24px -60px;background-repeat:no-repeat;image-rendering:pixelated;animation:coin-sprite-spin 1.75s steps(1,end) infinite}
+@keyframes coin-sprite-spin{
+  0%{background-position:-24px -60px}
+  7.69%{background-position:-67px -60px}
+  15.38%{background-position:-112px -60px}
+  23.07%{background-position:-154px -60px}
+  30.76%{background-position:-188px -60px}
+  38.45%{background-position:-221px -60px}
+  46.14%{background-position:-252px -60px}
+  53.83%{background-position:-283px -60px}
+  61.52%{background-position:-316px -60px}
+  69.21%{background-position:-350px -60px}
+  76.90%{background-position:-392px -60px}
+  84.59%{background-position:-436px -60px}
+  92.28%{background-position:-480px -60px}
+  100%{background-position:-24px -60px}
+}
+@media(max-width:760px){.coin-spinner{flex-basis:45px;width:45px;height:45px;background-size:447px 135px;background-position:-19px -49px;animation-name:coin-sprite-spin-small}.masthead .wordmark{gap:5px}}
+@keyframes coin-sprite-spin-small{
+  0%{background-position:-19px -49px}7.69%{background-position:-54px -49px}
+  15.38%{background-position:-90px -49px}23.07%{background-position:-123px -49px}
+  30.76%{background-position:-150px -49px}38.45%{background-position:-177px -49px}
+  46.14%{background-position:-202px -49px}53.83%{background-position:-226px -49px}
+  61.52%{background-position:-253px -49px}69.21%{background-position:-280px -49px}
+  76.90%{background-position:-314px -49px}84.59%{background-position:-349px -49px}
+  92.28%{background-position:-384px -49px}100%{background-position:-19px -49px}
+}
+@media(prefers-reduced-motion:reduce){.coin-spinner{animation:none;background-position:-436px -60px}}
+@media(max-width:760px) and (prefers-reduced-motion:reduce){.coin-spinner{background-position:-349px -49px}}
+.order-risk-note{margin-top:14px;padding:9px 11px;border-left:2px solid #8fa367;background:#22291e;color:#c5d5b3;font-size:11px;line-height:1.5}
+.market-status{padding:9px 4px;color:#9da79e;font:10px/1.5 monospace}
+
+/* A single transparent frame rotates in 3D, so neighbouring sprite frames can never bleed in. */
+.coin-spinner{width:48px;height:48px;flex-basis:48px;border-radius:0;background:transparent url('/coin-logo.png') center/contain no-repeat;transform-style:preserve-3d;animation:coin-clean-spin 1.8s linear infinite}
+@keyframes coin-clean-spin{to{transform:perspective(110px) rotateY(360deg)}}
+@media(max-width:760px){.coin-spinner{width:42px;height:42px;flex-basis:42px;animation-name:coin-clean-spin}}
+@media(prefers-reduced-motion:reduce){.coin-spinner{animation:none;background-position:center}}

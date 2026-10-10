@@ -46,6 +46,31 @@ def test_gemini_client_rotates_keys_and_falls_back(monkeypatch):
 
     monkeypatch.setenv("GEMINI_API_KEY", "primary")
     monkeypatch.setenv("GEMINI_API_KEY_SECONDARY", "secondary")
+    monkeypatch.setenv("GEMINI_API_KEY_TERTIARY", "tertiary")
     monkeypatch.setattr(gemini_client.requests, "post", post)
     assert gemini_client.complete("prompt", prefer_secondary=True) == "ready"
-    assert attempted == ["secondary", "primary"]
+    assert attempted == ["secondary", "tertiary"]
+
+
+def test_gemini_judge_prefers_third_key_and_rotates_to_primary(monkeypatch):
+    attempted = []
+
+    class Response:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{"text": "ready"}]}}]}
+
+    def post(url, *, headers, json, timeout):
+        attempted.append(headers["x-goog-api-key"])
+        if len(attempted) == 1:
+            raise requests.HTTPError("temporary failure")
+        return Response()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "primary")
+    monkeypatch.setenv("GEMINI_API_KEY_SECONDARY", "secondary")
+    monkeypatch.setenv("GEMINI_API_KEY_TERTIARY", "tertiary")
+    monkeypatch.setattr(gemini_client.requests, "post", post)
+    assert gemini_client.complete("prompt", prefer_tertiary=True) == "ready"
+    assert attempted == ["tertiary", "primary"]
