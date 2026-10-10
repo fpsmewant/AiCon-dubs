@@ -19,5 +19,6 @@ def test_debate_runs_both_perspectives_before_judging(monkeypatch):
     monkeypatch.setattr(orchestrator, 'latest_price', lambda symbol: 100)
     monkeypatch.setattr(orchestrator.bull, 'analyze', bull)
     monkeypatch.setattr(orchestrator.bear, 'analyze', bear)
-    monkeypatch.setattr(orchestrator.judge, 'propose', lambda *args: args)
+    monkeypatch.setattr(orchestrator, 'cached_news', lambda **kwargs: {'articles': []})
+    monkeypatch.setattr(orchestrator.judge, 'propose', lambda *args, **kwargs: args)
     assert orchestrator.analyze('AAPL') == ('AAPL', 100, 'bull argument', 'bear argument')

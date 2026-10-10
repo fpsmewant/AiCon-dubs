@@ -10,8 +10,9 @@ from execution.broker_adapter import IBroker
 from intelligence.generators import TradeProposal, UserMandate
 from intelligence.data_feeds.market_data import market_summary, daily_history
 from intelligence.helpers.opportunity import rank_opportunities
-from intelligence.voice.guide import GuidePlan, build_guide
+from intelligence.voice.guide import GuidePlan, INVESTING_TERMS, build_guide, invalid_plan
 from intelligence.voice.transcription import transcribe_audio
+from intelligence.data_feeds.marketaux import cached_news, sync_news
 
 
 router = APIRouter(prefix="/api")
@@ -139,6 +140,8 @@ async def transcribe(recording: UploadFile = File(...)) -> dict:
 
 class GuideRequest(BaseModel):
     prompt: str
+    countries: str = "us"
+    symbols: str = ""
 
 
 @router.post('/guide', response_model=GuidePlan)
@@ -149,14 +152,46 @@ def guide(
 ) -> GuidePlan:
     if len(request.prompt) > 500:
         raise HTTPException(status_code=422, detail='Guide requests must be 500 characters or less')
+    if not INVESTING_TERMS.search(request.prompt):
+        return invalid_plan()
     try:
         from intelligence.data_feeds.market_data import WATCHLIST
         quotes = market_summary()['quotes']
         histories = daily_history(list(WATCHLIST))
         candidates = rank_opportunities(quotes, histories, mandate, orchestrator.account_snapshot(broker))
-        return build_guide(request.prompt, candidates, histories)
+        news_symbols = request.symbols or ",".join(item["symbol"] for item in candidates[:5])
+        news = sync_news(request.countries, news_symbols, force=False, limit=10)["articles"]
+        return build_guide(request.prompt, candidates, histories, news)
     except Exception as exc:
         raise HTTPException(status_code=502, detail='The guided workspace is unavailable. Please retry.') from exc
+
+
+class NewsSyncRequest(BaseModel):
+    countries: str = "us"
+    symbols: str = ""
+    force: bool = False
+
+
+@router.get('/news')
+def news(countries: str = "us", symbols: str = "", limit: int = 20) -> dict:
+    try:
+        return cached_news(countries, symbols, limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post('/news/sync')
+def news_sync(request: NewsSyncRequest) -> dict:
+    try:
+        return sync_news(request.countries, request.symbols, request.force, limit=10)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        cached = cached_news(request.countries, request.symbols, 20)
+        if cached["articles"]:
+            cached.update({"stale": True, "new_count": 0, "fetched_count": 0, "cache_hit": True})
+            return cached
+        raise HTTPException(status_code=502, detail='Market news is unavailable and no cached stories exist.') from exc
 
 
 class ExecuteRequest(BaseModel):

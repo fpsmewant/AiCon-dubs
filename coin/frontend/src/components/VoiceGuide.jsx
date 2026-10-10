@@ -4,12 +4,14 @@ import { api } from '../services/api';
 
 const STEP_LABELS = {
   opportunities: 'Compare candidates',
+  market_news: 'Review new and stored news',
   price_history: 'Inspect price history',
   research: 'Run the bull / bear review',
   risk_mandate: 'Check your risk limits',
 };
 const STEP_TARGETS = {
   opportunities: 'opportunities',
+  market_news: 'market-news',
   price_history: 'price-history',
   research: 'research',
   risk_mandate: 'risk-mandate',
@@ -23,7 +25,7 @@ function speak(text) {
   window.speechSynthesis.speak(speech);
 }
 
-export default function VoiceGuide({ open, onClose, opportunities, onSelectSymbol }) {
+export default function VoiceGuide({ open, onClose, opportunities, newsFilters, onSelectSymbol }) {
   const [recording, setRecording] = useState(false);
   const [working, setWorking] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -56,7 +58,7 @@ export default function VoiceGuide({ open, onClose, opportunities, onSelectSymbo
     if (!clean) return;
     setWorking(true); setError(''); setPlan(null);
     try {
-      const next = await api.guide(clean);
+      const next = await api.guide(clean, newsFilters);
       setPlan(next); setStepIndex(0);
       speak(next.spoken_summary);
       if (next.valid) setTimeout(() => showStep(next, 0), 150);
@@ -112,8 +114,9 @@ export default function VoiceGuide({ open, onClose, opportunities, onSelectSymbo
     <form className="guide-form" onSubmit={event => { event.preventDefault(); runGuide(prompt); }}><input value={prompt} maxLength={500} onChange={event => setPrompt(event.target.value)} placeholder="Or type: How should I explore investing $100 long term?" aria-label="Guided investing request"/><button disabled={working || !prompt.trim()}>Guide me</button></form>
     {error && <p className="guide-error" role="alert">{error}</p>}
     {plan && <div className={`guide-result ${plan.valid ? '' : 'invalid'}`}><div className="guide-summary"><p>{plan.spoken_summary}</p><button onClick={() => speak(plan.spoken_summary)} aria-label="Read guidance aloud"><Volume2 size={17}/></button></div>
-      {plan.valid && <>{matches.length > 0 && <div className="guide-bars">{matches.map(item => <button key={item.symbol} onClick={() => onSelectSymbol(item.symbol)}><span><b>{item.symbol}</b><em>20-session return {item.return_20d_pct > 0 ? '+' : ''}{item.return_20d_pct}%</em></span><i><u style={{ width: `${Math.max(5, item.return_20d_pct / maxReturn * 100)}%` }}/></i><small>Risk-sized reference: {item.shares} shares / ${item.estimated_cost.toLocaleString()}</small></button>)}</div>}
+      {plan.valid && <>{matches.length > 0 && <div className="guide-bars">{matches.map(item => { const allocation = plan.allocations?.find(value => value.symbol === item.symbol); return <button key={item.symbol} onClick={() => onSelectSymbol(item.symbol)}><span><b>{item.symbol}</b><em>20-session return {item.return_20d_pct > 0 ? '+' : ''}{item.return_20d_pct}%</em></span><i><u style={{ width: `${allocation ? allocation.percent : Math.max(5, item.return_20d_pct / maxReturn * 100)}%` }}/></i><small>{allocation ? `$${allocation.amount.toLocaleString()} of the stated budget · ${allocation.percent}% · ${allocation.fractional_shares_reference} fractional-share reference` : `Risk-sized reference: ${item.shares} shares / $${item.estimated_cost.toLocaleString()}`}</small></button>})}</div>}
       <ul className="guide-points">{plan.key_points.map(point => <li key={point}>{point}</li>)}</ul>
+      {plan.news_points?.length > 0 && <div className="guide-news"><span className="small-label">NEWS IN THIS GUIDE</span>{plan.news_points.map(point => <p key={point}>{point}</p>)}</div>}
       {plan.steps.length > 0 && <div className="guide-progress"><span>{stepIndex + 1} / {plan.steps.length} · {STEP_LABELS[currentStep]}</span><div><button disabled={stepIndex === 0} onClick={() => showStep(plan, stepIndex - 1)}>Back</button><button onClick={() => stepIndex === plan.steps.length - 1 ? onClose() : showStep(plan, stepIndex + 1)}>{stepIndex === plan.steps.length - 1 ? 'Finish' : 'Next insight'}</button></div></div>}</>}
     </div>}
     <p className="guide-note">Voice is transcribed by Groq Whisper. Guidance uses current watchlist data and never submits an order.</p>

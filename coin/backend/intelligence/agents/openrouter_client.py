@@ -21,7 +21,7 @@ def complete(
         raise RuntimeError("OPENROUTER_API_KEY is not configured")
 
     payload = {
-        "model": model or os.getenv("OPENROUTER_DEBATE_MODEL", "dots-studio/dots-3-note-preview:free"),
+        "model": model or os.getenv("OPENROUTER_DEBATE_MODEL") or os.getenv("OPENROUTER_MODEL", "dots-studio/dots-3-note-preview:free"),
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
         "max_tokens": 1200,

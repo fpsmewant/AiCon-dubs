@@ -6,29 +6,33 @@ from concurrent.futures import ThreadPoolExecutor
 from execution.broker_adapter import IBroker
 from intelligence.agents import bear, bull, judge
 from intelligence.data_feeds.market_data import latest_price
+from intelligence.data_feeds.marketaux import cached_news
 from intelligence.generators import ExecutionMode, FirewallVerdict, TradeProposal, UserMandate
 from risk.firewall import RiskFirewall
 
 
 def analyze(symbol: str) -> TradeProposal:
     price = latest_price(symbol)
-    data = {"latest_trade_price": price, "source": "Alpaca IEX latest trade"}
+    news = cached_news(symbols=symbol, countries="", limit=5)["articles"]
+    data = {"latest_trade_price": price, "source": "Alpaca IEX latest trade", "recent_news": news}
     with ThreadPoolExecutor(max_workers=2) as pool:
         bullish = pool.submit(bull.analyze, symbol, data)
         bearish = pool.submit(bear.analyze, symbol, data)
         arguments = bullish.result(), bearish.result()
-    return judge.propose(symbol, price, *arguments)
+    return judge.propose(symbol, price, *arguments, news=news)
 
 
 def debate_side(symbol: str, side: str) -> dict:
     price = latest_price(symbol)
-    context = {'latest_trade_price': price, 'source': 'Alpaca IEX latest trade'}
+    news = cached_news(symbols=symbol, countries="", limit=5)["articles"]
+    context = {'latest_trade_price': price, 'source': 'Alpaca IEX latest trade', 'recent_news': news}
     argument = bull.analyze(symbol, context) if side == 'bull' else bear.analyze(symbol, context)
     return {'symbol': symbol, 'side': side, 'argument': argument, 'price': price}
 
 
 def judge_debate(symbol: str, bull_argument: str, bear_argument: str) -> TradeProposal:
-    return judge.propose(symbol, latest_price(symbol), bull_argument, bear_argument)
+    news = cached_news(symbols=symbol, countries="", limit=5)["articles"]
+    return judge.propose(symbol, latest_price(symbol), bull_argument, bear_argument, news=news)
 
 
 def account_snapshot(broker: IBroker) -> dict[str, Any]:

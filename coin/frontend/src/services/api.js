@@ -24,6 +24,8 @@ export const api = {
   judge: (symbol, bull_argument, bear_argument) => request('/judge', { method: 'POST', body: JSON.stringify({ symbol, bull_argument, bear_argument }) }),
   history: (symbol) => request(`/history/${encodeURIComponent(symbol)}`),
   opportunities: () => request('/opportunities'),
+  news: (countries = 'us', symbols = '') => request(`/news?countries=${encodeURIComponent(countries)}&symbols=${encodeURIComponent(symbols)}`),
+  syncNews: (countries = 'us', symbols = '', force = false) => request('/news/sync', { method: 'POST', body: JSON.stringify({ countries, symbols, force }) }),
   transcribe: async (blob) => {
     const form = new FormData();
     form.append('recording', blob, `question.${blob.type.includes('ogg') ? 'ogg' : 'webm'}`);
@@ -34,7 +36,7 @@ export const api = {
     if (!response.ok) throw new Error(data.detail || 'Voice transcription failed.');
     return data;
   },
-  guide: (prompt) => request('/guide', { method: 'POST', body: JSON.stringify({ prompt }) }),
+  guide: (prompt, filters = {}) => request('/guide', { method: 'POST', body: JSON.stringify({ prompt, countries: filters.countries || '', symbols: filters.symbols || '' }) }),
   validate: (proposal) => request('/validate', { method: 'POST', body: JSON.stringify(proposal) }),
   execute: (proposal, approved) => request('/execute', { method: 'POST', body: JSON.stringify({ proposal, approved }) }),
 };
