@@ -7,6 +7,9 @@ import { PriceChart, OpportunityHelper } from '../components/MarketCharts';
 import VoiceGuide from '../components/VoiceGuide';
 import NewsPanel from '../components/NewsPanel';
 import RiskConfig from '../components/RiskConfig';
+import InkOrbitFeatures from '../components/ui/ink-orbit-features';
+import { MeshGradientSVG } from '../components/ui/shader-svg';
+import { StockSymbol } from '../components/ui/stock-symbols';
 const initialMandate = { allocated_capital: 10000, risk_style: 'balanced', max_loss_per_trade: 100, max_daily_loss: 300, max_position_size: 2000, auto_execution_mode: 'recommend_approve' };
 const initialNewsFilters = { countries: 'us', symbols: 'AAPL,MSFT,NVDA,SPY,QQQ,TSLA' };
 const money = value => value != null && Number.isFinite(Number(value)) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value)) : '—';
@@ -38,6 +41,8 @@ export default function Dashboard() {
   const [newsFilters, setNewsFilters] = useState(initialNewsFilters);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState('');
+  const [analysisPhase, setAnalysisPhase] = useState('idle');
+  const [debateSources, setDebateSources] = useState({});
   const [newsFlashOpen, setNewsFlashOpen] = useState(false);
 
   useEffect(() => {
@@ -113,7 +118,7 @@ export default function Dashboard() {
     analysisRun.current += 1;
     if (busy === 'analyze') setBusy('');
     setSymbol(value); setProposal(null); setBullArgument(''); setBearArgument('');
-    setVerdict(null); setStatus('');
+    setVerdict(null); setStatus(''); setAnalysisPhase('idle'); setDebateSources({});
   };
 
   const updateMandate = (key, value) => {
@@ -138,39 +143,40 @@ export default function Dashboard() {
   async function analyze(event) {
     event.preventDefault();
     const run = ++analysisRun.current;
-    setBusy('analyze'); setMessage(''); setProposal(null); setVerdict(null); setStatus(''); setBullArgument(''); setBearArgument('');
+    setBusy('analyze'); setAnalysisPhase('fetching'); setMessage(''); setProposal(null); setVerdict(null); setStatus(''); setBullArgument(''); setBearArgument('');
     try {
       const selectedSymbol = symbol.trim().toUpperCase();
-      let state = await api.debateState(selectedSymbol);
-      if (state.status === 'running') {
-        for (let tries = 0; tries < 12 && state.status === 'running'; tries++) {
-          await new Promise(resolve => setTimeout(resolve, 750));
-          state = await api.debateState(selectedSymbol);
-          if (run !== analysisRun.current) return;
-          if (state.bull) setBullArgument(state.bull);
-          if (state.bear) setBearArgument(state.bear);
-        }
+      let state = await api.prefetch(selectedSymbol);
+      for (let tries = 0; tries < 150 && state.status === 'running'; tries++) {
+        if (run !== analysisRun.current) return;
+        setAnalysisPhase(state.price ? 'debating' : 'fetching');
+        if (state.sources) setDebateSources(state.sources);
+        if (state.bull) setBullArgument(state.bull);
+        if (state.bear) setBearArgument(state.bear);
+        await new Promise(resolve => setTimeout(resolve, 750));
+        state = await api.debateState(selectedSymbol);
       }
-      const [bull, bear] = state.status === 'complete' ? [state.bull, state.bear] : await Promise.all([
-        api.debate(selectedSymbol, 'bull').then(data => data.argument),
-        api.debate(selectedSymbol, 'bear').then(data => data.argument),
-      ]);
       if (run !== analysisRun.current) return;
-      setBullArgument(bull); setBearArgument(bear);
-      const next = await api.judge(selectedSymbol, bull, bear);
+      if (state.status !== 'complete') throw new Error('The analyst debate did not finish. Please retry.');
+      setDebateSources(state.sources || {});
+      setBullArgument(state.bull); setBearArgument(state.bear);
+      setAnalysisPhase('judging');
+      const next = await api.analyze(selectedSymbol);
       if (run !== analysisRun.current) return;
       setProposal(next);
       if (saved) {
         const checked = (await api.validate(next)).verdict;
+        if (run !== analysisRun.current) return;
         setVerdict(checked);
+        setAnalysisPhase(checked.passed ? 'ready' : 'blocked');
         if (mandate.auto_execution_mode === 'bounded_autopilot' && checked.passed) {
           const result = await api.execute(next, false);
           setStatus(result.status); setVerdict(result.verdict);
           setMessage(result.status === 'submitted' ? `Autopilot paper order submitted: ${result.order.id}` : 'Autopilot blocked by your safety settings.');
           await refreshAccount();
         }
-      } else setMessage('Save your mandate to see a firewall verdict.');
-    } catch (error) { if (run === analysisRun.current) setMessage(error.message); }
+      } else { setAnalysisPhase('ready'); setMessage('Save your mandate to see a firewall verdict.'); }
+    } catch (error) { if (run === analysisRun.current) { setAnalysisPhase('error'); setMessage(error.message); } }
     finally { if (run === analysisRun.current) setBusy(''); }
   }
 
@@ -223,8 +229,10 @@ export default function Dashboard() {
       <section className="account-strip" aria-label="Account overview">{[['Account balance', account?.equity], ['Buying power', account?.buying_power], ['Unrealized P&L', account?.unrealized_pl]].map(([label, value]) => <div className="metric" key={label}><span>{label}</span><strong className={label === 'Unrealized P&L' ? Number(value) < 0 ? 'down' : 'up' : ''}>{money(value)}</strong></div>)}<div className="metric account-source"><span>CONNECTED BROKER</span><strong>Alpaca <span className={accountError ? 'down' : 'up'}>+</span></strong><small>{accountError ? 'Sync interrupted' : account ? 'Paper trading' : 'Connecting...'}</small></div></section>
       <div className="workspace-grid"><div className="primary-column">
         <section className="section" id="research"><div className="section-heading"><h2><span>01</span> Research</h2><span className="small-label">GEMINI / GROQ</span></div><form onSubmit={analyze} className="symbol-form"><label className="symbol-input"><span>SYMBOL</span><input aria-label="Stock symbol" value={symbol} maxLength={12} onChange={e => selectSymbol(e.target.value.toUpperCase())}/></label><div className="selected-quote"><strong>{money(selected?.price)}</strong><span className={selected?.change_pct < 0 ? 'down' : 'up'}>{pct(selected?.change_pct)}</span></div><button className="primary-button" disabled={!!busy || !symbol.trim()}>{busy === 'analyze' ? 'Analyzing...' : 'View AI Debate'}<ArrowRight size={16}/></button></form>
+        {busy === 'analyze' && <div className="coin-thinking-banner"><MeshGradientSVG compact ticker={symbol} mood="thinking"/><span><b>Coin is {analysisPhase === 'fetching' ? 'gathering market signals' : analysisPhase === 'judging' ? 'weighing both cases' : 'debating both sides'}.</b><small>Alpaca → Marketaux → Liquid memory → analysts → judge</small></span></div>}
         <div className="debate-grid">{[['Bull case', bullArgument, true], ['Bear case', bearArgument, false]].map(([title, text, positive]) => <article className="thesis" key={title}><h3 className={positive ? 'up' : 'down'}>{positive ? <ArrowUpRight size={18}/> : <ArrowDownRight size={18}/>} {title}</h3><p>{text || (positive ? 'The opportunity, the catalysts, and the case for entering.' : 'The downside, the uncertainty, and the case for staying out.')}</p>{!text && <span className="small-label">{busy === 'analyze' ? 'ANALYST WORKING...' : 'AWAITING ANALYSIS'}</span>}</article>)}</div>
         <div className="judge"><div><span className="small-label">JUDGE'S ASSESSMENT</span><p>{proposal?.judge_summary || 'Choose a stock. The bull and bear results will appear as each analyst finishes; the judge follows both.'}</p></div><div className="confidence"><strong>{proposal ? Math.round(proposal.confidence_score * 100) + '%' : '—'}</strong><span>confidence</span></div></div></section>
+        <InkOrbitFeatures ticker={symbol} phase={analysisPhase} sources={debateSources} bull={bullArgument} bear={bearArgument} proposal={proposal} verdict={verdict} values={history.map(bar => Number(bar.close))}/>
         <PriceChart history={history} symbol={symbol} error={historyError}/>
         <NewsPanel data={news} filters={newsFilters} loading={newsLoading} error={newsError} onFilters={updateNewsFilters} onRefresh={refreshNews}/>
         <section className="section"><div className="section-heading"><h2><span>02</span> Order review</h2><span className="small-label">{proposal ? proposal.symbol + ' / ' + proposal.side.toUpperCase() + ' / ' + proposal.qty + (proposal.qty === 1 ? ' SHARE' : ' SHARES') : 'NO PROPOSAL'}</span></div><div className="order-prices">{[['Entry limit', proposal?.target_entry_price], ['Profit Target', proposal?.take_profit_price], ['Safety Stop', proposal?.stop_loss_price]].map(([label, value]) => <div key={label}><span>{label}</span><strong>{money(value)}</strong></div>)}</div>
@@ -233,7 +241,7 @@ export default function Dashboard() {
         <OpportunityHelper data={opportunities} loading={opportunityLoading} error={opportunityError} onSelect={selectSymbol} saved={saved}/>
         <section className="section" id="positions"><div className="section-heading"><h2><span>03</span> Positions</h2><span className="small-label">{positions.length} OPEN</span></div>{positions.length ? <><div className="portfolio-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><XAxis dataKey="symbol" tick={{fill:'#8b9097',fontSize:11}} axisLine={false} tickLine={false}/><YAxis hide/><Tooltip contentStyle={{background:'#191c20',border:'1px solid #34383d'}} formatter={money}/><Bar dataKey="value" fill="#d8ed88"/></BarChart></ResponsiveContainer></div><div className="position-table">{positions.map(p => <div key={p.symbol}><b>{p.symbol}</b><span>{p.qty} shares</span><span>{money(p.market_value)}</span><span className={Number(p.unrealized_pl) < 0 ? 'down' : 'up'}>{money(p.unrealized_pl)}</span></div>)}</div></> : <div className="empty-position"><span>--</span><div>No open positions<p>{accountError ? 'Account data is unavailable.' : 'Your paper portfolio will appear here after an order fills.'}</p></div></div>}</section>
       </div><aside>
-        <section className="section watchlist"><div className="section-heading"><h2>Market watch</h2><span className="small-label">IEX</span></div><div className="watch-head"><span>SYMBOL / LAST TRADE</span><span>PRICE / CHANGE</span></div>{quotes.map(q => <button className={'watch-row ' + (symbol === q.symbol ? 'selected' : '')} key={q.symbol} onClick={() => selectSymbol(q.symbol)}><span><b>{q.symbol}</b><small>{stamp(q.as_of)}</small></span><span><b>{money(q.price)}</b><small className={q.change_pct < 0 ? 'down' : 'up'}>{pct(q.change_pct)}</small></span></button>)}{!quotes.length && <p className="footnote">{marketError || 'Loading market prices...'}</p>}<p className="footnote">{marketError ? 'Feed interrupted. Displayed quotes may be stale.' : 'Latest available IEX trades. Change vs previous daily close.'}{market && !market.is_open && ' Next open: ' + stamp(market.next_open) + '.'}</p></section>
+        <section className="section watchlist"><div className="section-heading"><h2>Market watch</h2><span className="small-label">IEX</span></div><div className="watch-head"><span>SYMBOL / LAST TRADE</span><span>PRICE / CHANGE</span></div>{quotes.map(q => <button className={'watch-row ' + (symbol === q.symbol ? 'selected' : '')} key={q.symbol} onClick={() => selectSymbol(q.symbol)}><span><b><StockSymbol ticker={q.symbol}/></b><small>{stamp(q.as_of)}</small></span><span><b>{money(q.price)}</b><small className={q.change_pct < 0 ? 'down' : 'up'}>{pct(q.change_pct)}</small></span></button>)}{!quotes.length && <p className="footnote">{marketError || 'Loading market prices...'}</p>}<p className="footnote">{marketError ? 'Feed interrupted. Displayed quotes may be stale.' : 'Latest available IEX trades. Change vs previous daily close.'}{market && !market.is_open && ' Next open: ' + stamp(market.next_open) + '.'}</p></section>
         <RiskConfig mandate={mandate} saved={saved} busy={busy} onChange={updateMandate} onSave={saveMandate}/>
       </aside></div><footer><b>coin /</b><span>Paper trading. Real market data.</span><span>USD / US EQUITIES</span></footer>
     </main><VoiceGuide open={voiceOpen} busy={busy} canDeploy={saved && mode !== 'observe'} onClose={() => setVoiceOpen(false)} onSelectSymbol={selectSymbol} onDeploy={deployGuided}/>{message && <div role="status" className="toast"><span>{message}</span><button onClick={() => setMessage('')} aria-label="Dismiss notification">Close</button></div>}

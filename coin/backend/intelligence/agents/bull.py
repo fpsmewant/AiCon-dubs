@@ -15,7 +15,7 @@ def analyze(symbol: str, market_data: dict) -> str:
     try:
         def generate(prompt):
             try:
-                return gemini_complete(prompt.to_string())
+                return gemini_complete(prompt.to_string(), prefer_secondary=True)
             except Exception:
                 return complete(prompt.to_string())
         chain = PROMPT | RunnableLambda(generate)

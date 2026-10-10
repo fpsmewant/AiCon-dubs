@@ -1,5 +1,7 @@
 import json
 
+import requests
+
 from intelligence.agents import gemini_client
 
 
@@ -24,3 +26,26 @@ def test_gemini_client_uses_header_and_json_mode(monkeypatch):
     assert sent["headers"]["x-goog-api-key"] == "test-gemini"
     assert sent["url"].endswith("/gemini-test:generateContent")
     assert sent["payload"]["generationConfig"]["responseMimeType"] == "application/json"
+
+
+def test_gemini_client_rotates_keys_and_falls_back(monkeypatch):
+    attempted = []
+
+    class Response:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{"text": "ready"}]}}]}
+
+    def post(url, *, headers, json, timeout):
+        attempted.append(headers["x-goog-api-key"])
+        if len(attempted) == 1:
+            raise requests.HTTPError("temporary failure")
+        return Response()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "primary")
+    monkeypatch.setenv("GEMINI_API_KEY_SECONDARY", "secondary")
+    monkeypatch.setattr(gemini_client.requests, "post", post)
+    assert gemini_client.complete("prompt", prefer_secondary=True) == "ready"
+    assert attempted == ["secondary", "primary"]

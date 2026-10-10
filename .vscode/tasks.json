@@ -16,6 +16,14 @@
 			"group": "build"
 		},
 		{
+			"label": "Coin frontend server",
+			"type": "shell",
+			"command": "npm",
+			"args": ["--prefix", "coin/frontend", "run", "dev"],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
 			"label": "Coin backend server",
 			"type": "shell",
 			"command": "D:/AICON/.venv/Scripts/python.exe",
@@ -29,6 +37,19 @@
 				"127.0.0.1",
 				"--port",
 				"8000"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Coin frontend server",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"coin/frontend",
+				"run",
+				"dev"
 			],
 			"isBackground": true,
 			"problemMatcher": []

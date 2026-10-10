@@ -1,0 +1,44 @@
+/* Coin's live research path and listening mascot. */
+.coin-ghost{position:relative;flex:0 0 88px;width:88px;line-height:0}
+.coin-ghost-compact{flex-basis:46px;width:46px}
+.coin-ghost-float svg{display:block;width:100%;height:auto;overflow:visible}
+.coin-ghost-shader,.coin-ghost-mesh{width:100%;height:100%}
+.coin-ghost>.coin-stock-symbol{position:absolute;right:-5px;bottom:5px;background:#17201c;border:1px solid #526d4b;border-radius:50%;width:27px;height:27px;display:grid;place-items:center;box-shadow:0 2px 12px #0008}
+.coin-ghost-compact>.coin-stock-symbol{width:19px;height:19px;right:-4px;bottom:1px}
+.coin-ghost-compact>.coin-stock-symbol svg{width:12px;height:12px}
+.coin-stock-symbol{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.coin-stock-symbol svg{flex-shrink:0}
+.guide-personality{display:flex;align-items:center;gap:18px;padding:15px;margin:0 0 17px;background:linear-gradient(125deg,#222d31,#202723);border:1px solid #425751;border-radius:7px;min-height:120px}
+.guide-personality>span{font-size:13px;line-height:1.5;color:#e6eddc;max-width:220px}
+.coin-thinking-banner{display:flex;align-items:center;gap:16px;padding:11px 17px;margin:0 0 18px;background:#212a26;border:1px solid #546c45;border-radius:5px;animation:view-enter .3s ease-out}
+.coin-thinking-banner>span{display:flex;flex-direction:column;gap:5px}
+.coin-thinking-banner b{font-size:12px;color:#edf5db}
+.coin-thinking-banner small{font:9px/1.5 monospace;color:#9fb79e}
+.coin-workflow{background:linear-gradient(140deg,#1b2220,#171b1d);border-color:#3a4740}
+.coin-workflow .section-heading h2{margin-top:6px;font-size:17px}
+.coin-workflow>.section-heading>.coin-stock-symbol{padding:7px 10px;border:1px solid #46584b;border-radius:20px;font:700 11px monospace}
+.coin-workflow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.coin-workflow-card{min-width:0;min-height:180px;padding:14px;background:#151b1b;border:1px solid #34413d;border-radius:5px;transition:border-color .25s,background .25s,transform .25s}
+.coin-workflow-card[data-active="true"]{border-color:#b1ce79;background:#202b24;transform:translateY(-2px)}
+.coin-workflow-card-head{display:flex;align-items:center;justify-content:space-between;color:#cde49b;font:700 10px monospace;letter-spacing:.08em}
+.coin-workflow-card>p{font-size:10px;line-height:1.55;color:#9eaaa7;margin:14px 0 0}
+.coin-source-map{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:18px}
+.coin-source-map>span{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;color:#7d8989;font:700 10px monospace;text-align:center}
+.coin-source-map>span.active,.coin-debate-map>span.active{color:#cbe69e}
+.coin-source-map small{font:8px/1.3 Arial,sans-serif;color:#899894;white-space:nowrap}
+.coin-debate-map{display:flex;justify-content:center;align-items:center;gap:13px;margin-top:27px;color:#6c7875}
+.coin-debate-map>span{display:flex;flex-direction:column;align-items:center;gap:3px;color:#97a4a0}
+.coin-debate-map b{font-size:11px}
+.coin-debate-map small{font:9px monospace;color:#8b9993}
+.coin-decision-map{display:flex;justify-content:center;align-items:center;gap:22px;margin-top:33px;color:#c7e792}
+.coin-decision-map .muted{color:#5d6d60}
+.coin-workflow-footer{display:flex;align-items:center;gap:16px;margin-top:17px;padding-top:12px;border-top:1px solid #34413d;color:#bdda91;font:9px monospace;letter-spacing:.05em}
+.coin-workflow-pulse{animation:coin-pulse 1.25s ease-in-out infinite}
+.coin-workflow-spark{display:flex;align-items:center;gap:7px;margin-left:auto;color:#b4d897}
+.coin-workflow-spark svg{display:block;width:85px;height:27px}
+.coin-workflow-spark small{font-size:8px;color:#8d9b90}
+.coin-workflow-confidence{display:flex;align-items:center;gap:3px;color:#d6e9af;white-space:nowrap}
+@keyframes coin-pulse{50%{opacity:.45}}
+@media(max-width:850px){.coin-workflow-grid{grid-template-columns:1fr}.coin-workflow-card{min-height:0}.coin-source-map{justify-content:flex-start;gap:25px}.coin-debate-map,.coin-decision-map{justify-content:flex-start;margin-top:16px}}
+@media(max-width:480px){.coin-workflow-footer{flex-wrap:wrap}.coin-workflow-spark{margin-left:0}.guide-personality{min-height:105px}.coin-ghost{flex-basis:70px;width:70px}.coin-ghost-compact{flex-basis:46px;width:46px}}
+@media(prefers-reduced-motion:reduce){.coin-thinking-banner,.coin-workflow-pulse{animation:none}.coin-workflow-card{transition:none}}

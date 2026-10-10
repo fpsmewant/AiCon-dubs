@@ -7,3 +7,4 @@ db/market_news.sqlite3
 db/market_news.sqlite3-shm
 db/market_news.sqlite3-wal
 db/memory.sqlite3*
+test_tmp_run*/
