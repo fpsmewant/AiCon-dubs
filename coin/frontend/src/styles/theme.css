@@ -1,0 +1,23 @@
+/* Quiet blue accents for the trading desk; its layout remains unchanged. */
+.masthead, footer { background: #101c2d; }
+.paper-tag { color: #a8c9f8; border-color: #48688f; }
+.market-tape { background: #152337; border-color: #344b68; }
+.tape-label, .primary-button, .guide-form button, .guide-progress button:last-child,
+.guide-deploy { color: #0c1a30; }
+.tape-quote { border-color: #31445c; }
+.section { border-radius: 6px; }
+.primary-button:hover:not(:disabled) { background: #c4dcff; }
+.watch-row:hover, .watch-row.selected, .candidate:hover { background: #1c304a; }
+.secondary-button { border-color: #5678a4; }
+.secondary-button:hover { background: #1c304a; }
+.guide-mic { background: #1c304a; border-color: #5579a8; }
+.news-flash { background: #192b44; border-color: #42658f; }
+.news-flash-panel { background: #192b44; border-color: #42658f; }
+.news-flash-panel a, .candidate-chart { border-color: #344d69; }
+.guide-mini-chart { background: #182b43; border-color: #395a7e; }
+.guide-procon > div { background: #1c314b; border-color: #85b8f6; }
+.guide-procon > div + div { background: #322b3c; border-color: #dd9aa9; }
+.guide-safety { border-color: #4f8e91; color: #a0ddd8; }
+.news-controls button { border-color: #5e81ab; }
+.news-status span:first-child, .news-tickers span { border-color: #5279a2; }
+.news-meta b { color: #0c1a30; }

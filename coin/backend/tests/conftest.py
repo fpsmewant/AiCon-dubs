@@ -13,6 +13,5 @@ def isolate_credentials(monkeypatch, tmp_path):
     for key in ('ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'GEMINI_API_KEY', 'GEMINI_API_KEY_SECONDARY',
                 'GEMINI_API_KEY_TERTIARY',
                 'OPENROUTER_API_KEY', 'OPENROUTER_DEBATE_API_KEY',
-                'OPENROUTER_GUIDE_API_KEY', 'GROQ_API_KEY', 'MARKETAUX_API_KEY', 'LIQUID_API_KEY',
-                'COINBOT_DEMO_KEY_ID', 'COINBOT_DEMO_PRIVATE_KEY_PATH'):
+                'OPENROUTER_GUIDE_API_KEY', 'GROQ_API_KEY', 'MARKETAUX_API_KEY', 'LIQUID_API_KEY'):
         monkeypatch.delenv(key, raising=False)

@@ -1,0 +1,6 @@
+backend/.env
+backend/db/*.sqlite3*
+backend/test_tmp*/
+backend/.pytest_cache/
+frontend/.next/
+frontend/node_modules/

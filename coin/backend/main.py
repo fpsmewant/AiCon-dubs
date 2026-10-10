@@ -31,7 +31,7 @@ async def lifespan(app):
     thread = Thread(target=worker, daemon=True, name='coin-learning')
     thread.start()
     from engine.coinbot import run as run_coinbot
-    bot_thread = Thread(target=run_coinbot, args=(stop,), daemon=True, name='coinbot-demo')
+    bot_thread = Thread(target=run_coinbot, args=(stop,), daemon=True, name='coinbot-stocks')
     bot_thread.start()
     yield
     stop.set()

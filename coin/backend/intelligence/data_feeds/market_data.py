@@ -12,7 +12,7 @@ from alpaca.data.timeframe import TimeFrame
 from alpaca.trading.client import TradingClient
 
 
-WATCHLIST = ('SPY', 'QQQ', 'DIA', 'AAPL', 'MSFT', 'NVDA', 'AMZN', 'TSLA')
+WATCHLIST = ('SPY', 'QQQ', 'DIA', 'AAPL', 'MSFT', 'NVDA', 'AMZN', 'TSLA', 'AMD')
 _cache = None
 _cache_until = 0.0
 _lock = Lock()
@@ -21,12 +21,14 @@ _lock = Lock()
 def snapshot_quote(symbol, snapshot):
     trade = snapshot.latest_trade
     previous = snapshot.previous_daily_bar
+    minute_bar = getattr(snapshot, 'minute_bar', None)
     price = float(trade.price) if trade and trade.price > 0 else None
     close = float(previous.close) if previous and previous.close > 0 else None
     return {
         'symbol': symbol, 'price': price,
         'change_pct': (price / close - 1) * 100 if price is not None and close else None,
         'as_of': trade.timestamp.isoformat() if trade else None,
+        'volume': float(minute_bar.volume) if minute_bar and minute_bar.volume else 0,
     }
 
 
@@ -103,3 +105,17 @@ def daily_history(symbols: list[str], days: int = 45) -> dict:
         ]
         for symbol in symbols
     }
+
+
+def minute_history(symbol: str, days: int = 4, limit: int = 90) -> list[dict]:
+    """Recent IEX minute closes for the chart, including the last market session."""
+    key, secret = os.getenv('ALPACA_API_KEY'), os.getenv('ALPACA_SECRET_KEY')
+    if not key or not secret:
+        raise RuntimeError('Alpaca paper API keys are not configured')
+    now = datetime.now(timezone.utc)
+    bars = StockHistoricalDataClient(key, secret).get_stock_bars(StockBarsRequest(
+        symbol_or_symbols=symbol, timeframe=TimeFrame.Minute,
+        start=now - timedelta(days=days), end=now, feed=DataFeed.IEX, limit=10000,
+    )).data.get(symbol, [])
+    return [{'ts': bar.timestamp.isoformat(), 'price': float(bar.close),
+             'volume': float(bar.volume)} for bar in bars[-limit:]]

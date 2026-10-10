@@ -1,66 +1,90 @@
+"""CoinBot order guards and the learning journal, without account credentials."""
+
 from datetime import datetime, timedelta, timezone
 
 from db import coinbot_memory as memory
 from engine import coinbot
 
 
-def market(opened):
-    return {"ticker": "KXBTC15M-TEST", "title": "BTC up?", "open_time": opened.isoformat(),
-            "close_time": (opened + timedelta(minutes=15)).isoformat(),
-            "yes_bid_dollars": "0.4800", "yes_ask_dollars": "0.5200",
-            "no_bid_dollars": "0.4800", "no_ask_dollars": "0.5200", "volume_fp": "100"}
+def quote(symbol="NVDA", price=100):
+    return {"symbol": symbol, "price": price, "change_pct": 1.2,
+            "as_of": datetime.now(timezone.utc).isoformat()}
 
 
-def test_first_two_minutes_cannot_place_order(monkeypatch):
-    opened = datetime.now(timezone.utc) - timedelta(seconds=60)
-    sample = market(opened)
-    calls = []
+class FakeClient:
+    def __init__(self):
+        self.orders = []
 
-    class FakeClient:
-        def markets(self, status="open"):
-            return [sample]
+    def get_positions(self):
+        return []
 
-        def market(self, ticker):
-            return sample
+    def get_open_order_symbols(self):
+        return set()
 
-        def balance(self):
-            return {"balance": 10000, "portfolio_value": 0}
+    def get_account(self):
+        return {"buying_power": 5000, "daily_loss": 0}
 
-        def order(self, **kwargs):
-            calls.append(kwargs)
-            raise AssertionError("Order attempted during observation period")
+    def place_stock_bracket(self, symbol, qty, stop, target):
+        self.orders.append((symbol, qty, stop, target))
+        return {"id": "paper-1", "status": "accepted", "symbol": symbol}
 
-    monkeypatch.setattr(coinbot, "_spot", lambda: 80000)
-    monkeypatch.setattr(coinbot, "_runtime", {"phase": "idle", "market": None, "error": None,
-        "last_decision": None, "last_decision_at": 0.0, "last_equity_at": 0.0,
-        "last_discovery_at": 0.0, "current_ticker": None, "upcoming": None, "client": None,
-        "last_settlement_at": 0.0})
+
+def test_closed_market_never_sends_an_order(monkeypatch):
+    client = FakeClient()
+    monkeypatch.setattr(coinbot, "market_summary", lambda: {
+        "is_open": False, "quotes": [quote()], "next_open": None, "fetched_at": None,
+    })
+    monkeypatch.setattr(coinbot, "minute_history", lambda *args: [])
+    monkeypatch.setattr(coinbot, "_reconcile", lambda *args: None)
     memory.update_settings(enabled=True)
-    coinbot.tick(FakeClient(), opened + timedelta(seconds=60))
-    assert coinbot._runtime["phase"] == "observing"
-    assert len(memory.recent_snapshots(sample["ticker"])) == 1
-    assert calls == []
+    coinbot.tick(client)
+    assert coinbot.status()["phase"] == "market_closed"
+    assert not client.orders
+    assert not memory.recent_snapshots("NVDA")
 
 
-def test_demo_market_filter_and_round_memory():
-    opened = datetime.now(timezone.utc) - timedelta(minutes=3)
-    current, upcoming = coinbot._select_market([market(opened),
-        market(opened + timedelta(minutes=15)),
-        market(opened - timedelta(days=1))])
-    assert current["ticker"] == "KXBTC15M-TEST"
-    assert upcoming is not None
-    memory.record_order("buy-1", "KXBTC15M-TEST", "yes", "buy", 2, .52)
-    memory.record_order("sell-1", "KXBTC15M-TEST", "yes", "sell", 1, .65)
-    assert memory.exposure("KXBTC15M-TEST")["yes"]["count"] == 1
-    assert memory.exposure("KXBTC15M-TEST")["spent"] == 1.04
+def test_risk_budget_respects_mandate_and_whole_share():
+    class Mandate:
+        max_daily_loss = 100
+        max_position_size = 700
+        allocated_capital = 3000
+        max_loss_per_trade = 10
+
+    budget, reason = coinbot._budget({"max_trade_budget": 1000, "stop_loss_pct": 2},
+                                     Mandate(), {"buying_power": 5000, "daily_loss": 0}, 200)
+    assert budget == 500
+    assert reason is None
+    budget, reason = coinbot._budget({"max_trade_budget": 100, "stop_loss_pct": 2},
+                                     Mandate(), {"buying_power": 5000, "daily_loss": 0}, 200)
+    assert budget == 0
+    assert "one share" in reason
 
 
-def test_demo_host_is_required(monkeypatch):
-    from execution.kalshi_demo import CoinBotDemoClient
-    monkeypatch.setenv("COINBOT_DEMO_BASE_URL", "https://external-api.kalshi.com/trade-api/v2")
-    try:
-        CoinBotDemoClient()
-    except ValueError as exc:
-        assert "demo" in str(exc)
-    else:
-        raise AssertionError("Production endpoint was accepted")
+def test_recent_losses_block_new_proposal(monkeypatch):
+    memory.record_trade("lost-1", "NVDA", 1, 100, 98, 103, "closed")
+    memory.update_trade("lost-1", pnl=-2, exit_time=memory.now_iso(), lesson="Loss")
+    memory.record_trade("lost-2", "NVDA", 1, 100, 98, 103, "closed")
+    memory.update_trade("lost-2", pnl=-2, exit_time=memory.now_iso(), lesson="Loss")
+    monkeypatch.setattr(coinbot.gemini_client, "complete", lambda *args, **kwargs:
+                        (_ for _ in ()).throw(AssertionError("Model should not be called")))
+    decision = coinbot._decide("NVDA", 0.6, quote(),
+                              {"take_profit_pct": 3, "stop_loss_pct": 1.5}, 500)
+    assert decision["action"] == "WAIT"
+
+
+def test_entry_and_exit_are_journaled():
+    memory.record_trade("paper-1", "AAPL", 2, 100, 98, 103, "accepted")
+    memory.update_trade("paper-1", status="filled", filled_qty=2, entry_price=100)
+    trade = memory.open_trades()[0]
+    result = coinbot._closed(trade, 2, {"filled_avg_price": 100},
+                             {"filled_avg_price": 103, "filled_at": memory.now_iso()})
+    memory.update_trade("paper-1", **result)
+    assert memory.open_trades() == []
+    assert memory.lessons("AAPL")[0]["pnl"] == 6
+    assert memory.realized_today() == 6
+
+
+def test_rank_needs_real_observation_span():
+    for _ in range(5):
+        memory.snapshot("TSLA", 250)
+    assert coinbot._rank([quote("TSLA", 250)]) == []

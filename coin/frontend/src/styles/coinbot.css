@@ -1,17 +1,152 @@
-.coinbot-page{min-height:100vh;background:#0b1110;color:#e9f0e6;font-family:Arial,Helvetica,sans-serif}
-.coinbot-topbar{height:76px;padding:0 max(4%,calc((100vw - 1440px)/2));display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #28372f;background:#101915}
-.coinbot-brand{display:flex;align-items:center;gap:8px;font-size:25px;font-weight:800;letter-spacing:-1.5px}.coinbot-brand>span:last-child{color:#c2e68c;margin-left:-8px}
-.coinbot-avatar{display:inline-block;width:47px;height:47px;flex:none;background:url('/coin-logo.png') center/contain no-repeat;transform-style:preserve-3d}
-.coinbot-avatar.working{animation:coinbot-burst 4s ease-out infinite}
-@keyframes coinbot-burst{0%{transform:perspective(110px) rotateY(0)}25%{transform:perspective(110px) rotateY(360deg)}32%,100%{transform:perspective(110px) rotateY(360deg)}}
-.coinbot-topbar nav{display:flex;align-items:center;gap:30px}.coinbot-topbar nav a{display:flex;align-items:center;gap:7px;color:#b8c8b8;font-size:12px}.coinbot-topbar nav a:hover{color:#d8f39e}
-.coinbot-demo-badge{display:flex;align-items:center;gap:8px;border:1px solid #587247;padding:8px 11px;color:#b9db8d;font:10px monospace;letter-spacing:.08em}.coinbot-demo-badge>span,.coinbot-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#bde478;box-shadow:0 0 10px #bde478}
-.coinbot-main{max-width:1440px;margin:auto;padding:30px 4% 70px}.coinbot-eyebrow,.coinbot-panel-kicker{color:#a4bf95;font:10px monospace;letter-spacing:.12em}.coinbot-hero{display:flex;justify-content:space-between;align-items:center;gap:30px;min-height:235px;padding:25px 0 30px}.coinbot-hero h1{font-size:clamp(31px,4vw,54px);font-weight:500;letter-spacing:-.055em;margin:12px 0}.coinbot-intro{max-width:680px;color:#a1b2aa;font-size:13px;line-height:1.7;margin:0}.coinbot-hero-orb{width:160px;height:160px;display:grid;place-items:center;border:1px solid #334b36;border-radius:50%;background:radial-gradient(circle,#273c2a,#111c17 62%,#0b1110 72%);box-shadow:0 0 55px #37563944}.coinbot-hero-orb .coinbot-avatar{width:103px;height:103px}
-.coinbot-alert{display:flex;align-items:center;justify-content:space-between;background:#41251e;border:1px solid #93534a;color:#ffd0c5;padding:11px 14px;margin:0 0 18px;font-size:12px}.coinbot-alert button{color:inherit}
-.coinbot-status-grid,.coinbot-charts,.coinbot-bottom-grid{display:grid;grid-template-columns:1.45fr 1fr;gap:16px;margin-bottom:16px}.coinbot-charts{grid-template-columns:1fr 1fr}.coinbot-bottom-grid{grid-template-columns:1fr 1fr}.coinbot-panel{min-width:0;padding:22px;background:#141e19;border:1px solid #304136;border-radius:5px}.coinbot-panel-kicker{display:flex;align-items:center;gap:9px}.coinbot-panel-kicker .coinbot-live-dot{margin-left:auto}.coinbot-panel h2{font-size:20px;font-weight:500;letter-spacing:-.025em;margin:15px 0 5px}.coinbot-panel p{color:#97ab9d;font-size:12px;line-height:1.6}.coinbot-market-id{font:10px monospace!important;color:#7e9c88!important;margin:0 0 18px}.coinbot-live-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}.coinbot-live-stats>div{border:1px solid #33483a;background:#19271d;padding:12px;min-width:0}.coinbot-live-stats small,.coinbot-decision small{display:block;color:#86a089;font:9px monospace;letter-spacing:.08em}.coinbot-live-stats strong{display:block;font:20px monospace;color:#e2edda;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.coinbot-phase{display:flex;align-items:center;gap:10px;margin:6px 0 17px}.coinbot-phase>span{width:7px;height:7px;border-radius:50%;background:#d9c477}.coinbot-phase>span.coinbot-phase-pulse{background:#a9df82;animation:coinbot-pulse 1.5s ease-in-out infinite}.coinbot-phase b{font-size:11px}.coinbot-phase small{margin-left:auto;color:#9aafa0;font:10px monospace;text-align:right}@keyframes coinbot-pulse{50%{opacity:.35}}
-.coinbot-timeline{position:relative;height:6px;border-radius:4px;background:#334338;overflow:hidden}.coinbot-timeline i{display:block;height:100%;background:linear-gradient(90deg,#b9c977,#82d68b);transition:width 1s linear}.coinbot-observation-band{position:absolute;left:13.33%;height:100%;width:1px;background:#eef1b4}.coinbot-time-labels{display:flex;justify-content:space-between;margin-top:8px;color:#819789;font:9px monospace}
-.coinbot-controls>p{margin:8px 0 22px}.coinbot-input-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.coinbot-input-grid label{position:relative;color:#a1b4a4;font-size:10px}.coinbot-input-grid label span{position:absolute;right:11px;bottom:12px;color:#7c977c}.coinbot-input-grid input{margin-top:7px;padding-right:25px;background:#0e1712;border-color:#455949;font-size:14px}.coinbot-primary{display:flex;justify-content:center;align-items:center;gap:9px;width:100%;padding:13px;margin:22px 0 10px;background:#bee486;color:#17220f;border:1px solid #bee486;border-radius:4px;font-size:12px;font-weight:700}.coinbot-primary:hover{background:#d4f6a6}.coinbot-primary.coinbot-stop{background:#26392c;color:#c9e0bb}.coinbot-hint{display:block;color:#8da18f;font:10px/1.55 monospace;margin-top:6px}
-.coinbot-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:15px}.coinbot-panel-heading h2{margin:7px 0 0}.coinbot-panel-heading b{font:22px monospace}.coinbot-chart{height:245px;margin:20px 0 0}.coinbot-chart-empty{height:100%;display:grid;place-items:center;color:#7e9285;font-size:12px}.coinbot-positive{color:#9bdf91!important}.coinbot-negative{color:#ee857d!important}.coinbot-muted{color:#b0baaa!important}.coinbot-spent{font:11px monospace;color:#9eb996}.coinbot-position{display:flex;align-items:center;gap:16px;border:1px solid #445c45;background:#1e2d22;margin:22px 0;padding:13px}.coinbot-position>b{display:flex;align-items:center;gap:5px;font:15px monospace}.coinbot-position>span{color:#bad0b8;font:11px monospace}.coinbot-position button{display:flex;align-items:center;gap:5px;margin-left:auto;padding:8px 10px;background:#354a37;color:#d8ebca;font-size:10px;border-radius:3px}.coinbot-position button:hover{background:#486548}.coinbot-empty{color:#86998b!important;padding:14px 0}.coinbot-decision{border-top:1px solid #34443a;padding-top:16px;margin-top:17px}.coinbot-decision strong{display:block;margin-top:6px;font:17px monospace;color:#e2edda}.coinbot-decision p{margin:7px 0}.coinbot-decision>span{color:#b9d89f;font:10px monospace}.coinbot-trades{margin-top:15px}.coinbot-trades>div{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:10px 0;border-top:1px solid #314236;font:11px monospace}.coinbot-trades time{color:#8ba18f}.coinbot-trades span{color:#d1dec9;text-align:right}.coinbot-rounds{margin-top:16px}.coinbot-round-list{margin-top:13px}.coinbot-round-list>div{display:grid;grid-template-columns:70px 1.4fr 80px 75px 1.5fr;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #304136;font:11px monospace}.coinbot-round-list time,.coinbot-round-list small{color:#8ca18e}.coinbot-round-list b{text-align:right}
-@media(max-width:900px){.coinbot-status-grid,.coinbot-charts,.coinbot-bottom-grid{grid-template-columns:1fr}.coinbot-hero-orb{width:120px;height:120px;flex:none}.coinbot-hero-orb .coinbot-avatar{width:80px;height:80px}}
-@media(max-width:600px){.coinbot-main{padding:16px 4% 50px}.coinbot-topbar{padding:0 4%}.coinbot-topbar nav{gap:10px}.coinbot-topbar nav a{font-size:0}.coinbot-hero{min-height:0;padding:18px 0 24px}.coinbot-hero-orb{width:77px;height:77px}.coinbot-hero-orb .coinbot-avatar{width:55px;height:55px}.coinbot-live-stats{gap:5px}.coinbot-live-stats>div{padding:8px}.coinbot-live-stats strong{font-size:13px}.coinbot-input-grid{grid-template-columns:1fr}.coinbot-phase{flex-wrap:wrap}.coinbot-phase small{width:100%;margin:0;text-align:left}.coinbot-position{flex-wrap:wrap}.coinbot-position button{margin-left:0}.coinbot-round-list>div{grid-template-columns:1fr 1fr;gap:5px}.coinbot-round-list b{text-align:left}}
-@media(prefers-reduced-motion:reduce){.coinbot-avatar.working,.coinbot-phase-pulse{animation:none}}
+.coinbot-page {
+  min-height: 100vh;
+  color: #e9f1ff;
+  background: radial-gradient(circle at 78% 4%, #172c4b 0, transparent 32%), #0b1422;
+}
+
+.coinbot-topbar {
+  height: 76px;
+  padding: 0 max(4%, calc((100vw - 1440px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #283a55;
+  background: #0d192a;
+}
+
+.coinbot-brand { display: flex; align-items: center; gap: 7px; font-size: 25px; font-weight: 800; letter-spacing: -1.5px; }
+.coinbot-brand > span:last-child { color: #90baff; margin-left: -7px; }
+.coinbot-topbar nav a { display: flex; align-items: center; gap: 8px; color: #abc0dc; font-size: 12px; }
+.coinbot-topbar nav a:hover { color: #fff; }
+.coinbot-avatar {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  background: url('/coin-logo.png') center / contain no-repeat;
+  transform-style: preserve-3d;
+}
+.coinbot-avatar.working { animation: coinbot-burst 4.2s ease-out infinite; }
+@keyframes coinbot-burst {
+  0% { transform: perspective(120px) rotateY(0); }
+  22% { transform: perspective(120px) rotateY(360deg); }
+  32%, 100% { transform: perspective(120px) rotateY(360deg); }
+}
+
+.coinbot-main { max-width: 1440px; margin: auto; padding: 30px 4% 70px; }
+.coinbot-eyebrow, .coinbot-panel-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8eb7f0;
+  font: 10px monospace;
+  letter-spacing: .12em;
+}
+.coinbot-hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 22px 0 30px; }
+.coinbot-hero h1 { max-width: 760px; margin: 12px 0; font-size: clamp(32px, 4vw, 54px); font-weight: 500; letter-spacing: -.055em; }
+.coinbot-intro { max-width: 650px; margin: 0; color: #a6b8d0; font-size: 13px; line-height: 1.7; }
+.coinbot-hero-orb {
+  display: grid;
+  place-items: center;
+  width: 154px;
+  height: 154px;
+  flex: none;
+  border: 1px solid #42638e;
+  border-radius: 50%;
+  background: radial-gradient(circle, #203e66 0, #11243e 54%, #0b1422 74%);
+  box-shadow: 0 0 60px #4e80bf29;
+}
+.coinbot-hero-orb .coinbot-avatar { width: 100px; height: 100px; }
+.coinbot-alert { display: flex; justify-content: space-between; gap: 20px; padding: 11px 14px; margin-bottom: 18px; color: #ffd4ce; background: #3a242b; border: 1px solid #92505b; font-size: 12px; }
+
+.coinbot-status-grid, .coinbot-charts, .coinbot-bottom-grid { display: grid; gap: 16px; margin-bottom: 16px; }
+.coinbot-status-grid { grid-template-columns: 1.25fr 1fr; }
+.coinbot-charts, .coinbot-bottom-grid { grid-template-columns: 1fr 1fr; }
+.coinbot-panel { min-width: 0; padding: 22px; background: #121f32; border: 1px solid #2b405c; border-radius: 7px; }
+.coinbot-panel h2 { margin: 14px 0 5px; font-size: 20px; font-weight: 500; letter-spacing: -.03em; }
+.coinbot-panel p { color: #9fb1c9; font-size: 12px; line-height: 1.6; }
+.coinbot-symbol { margin-left: 7px; color: #89b6f4; font: 12px monospace; letter-spacing: .03em; }
+.coinbot-live-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 23px 0; }
+.coinbot-live-stats > div { min-width: 0; padding: 12px; border: 1px solid #334c6c; background: #172940; }
+.coinbot-live-stats small, .coinbot-decision small { display: block; color: #89a4c6; font: 9px monospace; letter-spacing: .09em; }
+.coinbot-live-stats strong { display: block; overflow: hidden; margin-top: 8px; color: #eaf2ff; font: 20px monospace; text-overflow: ellipsis; white-space: nowrap; }
+.coinbot-phase { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.coinbot-phase > span { width: 7px; height: 7px; border-radius: 50%; background: #80b4f8; }
+.coinbot-phase > span.coinbot-phase-pulse { animation: coinbot-pulse 1.7s ease-in-out infinite; }
+.coinbot-phase b { font-size: 11px; }
+.coinbot-phase small { margin-left: auto; color: #9cb1cc; font: 10px monospace; }
+@keyframes coinbot-pulse { 50% { opacity: .3; box-shadow: 0 0 0 5px #80b4f833; } }
+
+.coinbot-controls > p { margin: 8px 0 22px; }
+.coinbot-input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.coinbot-input-grid label { position: relative; color: #a6b9d2; font-size: 10px; }
+.coinbot-input-grid label span { position: absolute; right: 11px; bottom: 12px; color: #8da8cb; }
+.coinbot-input-grid input { margin-top: 7px; padding-right: 25px; color: #f0f5ff; background: #0e1a2c; border-color: #395272; font-size: 14px; }
+.coinbot-primary { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 13px; margin: 22px 0 10px; color: #0c1a30; background: #96beff; border: 1px solid #96beff; border-radius: 5px; font-size: 12px; font-weight: 700; }
+.coinbot-primary:hover { background: #b9d4ff; }
+.coinbot-primary.coinbot-stop { color: #d8e8ff; background: #213955; border-color: #45658a; }
+.coinbot-hint { display: block; color: #8fa5c0; font: 10px/1.55 monospace; }
+
+.coinbot-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+.coinbot-panel-heading h2 { margin: 7px 0 0; }
+.coinbot-panel-heading > span { color: #8fa5c0; font: 10px monospace; }
+.coinbot-panel-heading b { font: 21px monospace; }
+.coinbot-watchlist { margin-bottom: 16px; }
+.coinbot-stock-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 18px; }
+.coinbot-stock-list button { display: grid; grid-template-columns: 1fr auto; gap: 6px; min-width: 0; padding: 12px; text-align: left; color: #eaf2ff; background: #172940; border: 1px solid #314968; border-radius: 5px; }
+.coinbot-stock-list button:hover, .coinbot-stock-list button.selected { background: #203855; border-color: #7daaf0; }
+.coinbot-stock-list button > .coin-stock-symbol { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font: 13px monospace; }
+.coinbot-stock-list small { grid-column: 1 / -1; color: #90a6c0; font-size: 10px; }
+.coinbot-stock-list strong { align-self: end; font: 15px monospace; }
+.coinbot-stock-list em { align-self: end; text-align: right; font: 10px monospace; }
+
+.coinbot-chart { height: 240px; margin: 20px 0 10px; }
+.coinbot-chart-empty { display: grid; place-items: center; height: 100%; color: #8198b6; font-size: 12px; text-align: center; }
+.coinbot-tooltip { padding: 9px 11px; color: #eaf2ff; background: #152238; border: 1px solid #365071; border-radius: 6px; font: 11px monospace; }
+.coinbot-positive { color: #8bd8c7 !important; }
+.coinbot-negative { color: #f1959b !important; }
+.coinbot-position { display: flex; align-items: center; gap: 16px; margin: 20px 0; padding: 13px; background: #1b3049; border: 1px solid #41617e; }
+.coinbot-position > .coin-stock-symbol { display: flex; align-items: center; gap: 6px; font: 14px monospace; }
+.coinbot-position > span:nth-child(2) { color: #bbcee5; font: 11px/1.6 monospace; }
+.coinbot-position button { display: flex; align-items: center; gap: 5px; margin-left: auto; padding: 8px 10px; color: #e4efff; background: #2a4869; border-radius: 4px; font-size: 10px; }
+.coinbot-empty { padding: 14px 0; color: #8da4be !important; }
+.coinbot-decision { margin-top: 17px; padding-top: 16px; border-top: 1px solid #314662; }
+.coinbot-decision strong { display: block; margin-top: 6px; color: #e6f0ff; font: 17px monospace; }
+.coinbot-decision p { margin: 7px 0; }
+.coinbot-decision > span { color: #9fc5ff; font: 10px monospace; }
+.coinbot-trades { margin-top: 15px; }
+.coinbot-trades > div { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid #30445f; font: 11px monospace; }
+.coinbot-trades time, .coinbot-trades > div > span:last-child { color: #a6b9d0; }
+.coinbot-trades .coin-stock-symbol { display: flex; align-items: center; gap: 5px; }
+.coinbot-lessons { margin-top: 16px; }
+.coinbot-lesson-list { margin-top: 13px; }
+.coinbot-lesson-list > div { display: grid; grid-template-columns: 90px 90px 1fr 65px; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid #30445f; font: 11px monospace; }
+.coinbot-lesson-list .coin-stock-symbol { display: flex; align-items: center; gap: 5px; }
+.coinbot-lesson-list span:nth-child(3), .coinbot-lesson-list time { color: #9fb3cf; }
+
+@media (max-width: 1000px) {
+  .coinbot-stock-list { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 850px) {
+  .coinbot-status-grid, .coinbot-charts, .coinbot-bottom-grid { grid-template-columns: 1fr; }
+  .coinbot-hero-orb { width: 120px; height: 120px; }
+  .coinbot-hero-orb .coinbot-avatar { width: 78px; height: 78px; }
+}
+@media (max-width: 600px) {
+  .coinbot-main { padding: 16px 4% 50px; }
+  .coinbot-topbar { padding: 0 4%; }
+  .coinbot-hero { gap: 10px; padding: 16px 0 24px; }
+  .coinbot-hero-orb { width: 72px; height: 72px; }
+  .coinbot-hero-orb .coinbot-avatar { width: 49px; height: 49px; }
+  .coinbot-input-grid { grid-template-columns: 1fr; }
+  .coinbot-stock-list { grid-template-columns: repeat(2, 1fr); }
+  .coinbot-live-stats { gap: 5px; }
+  .coinbot-live-stats > div { padding: 8px; }
+  .coinbot-live-stats strong { font-size: 13px; }
+  .coinbot-position { flex-wrap: wrap; }
+  .coinbot-position button { margin-left: 0; }
+  .coinbot-lesson-list > div { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coinbot-avatar.working, .coinbot-phase-pulse { animation: none; }
+}

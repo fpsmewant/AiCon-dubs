@@ -103,3 +103,11 @@ npm install
 npm run dev
 ```
 *(Once running, open `http://localhost:3000` in your web browser.)*
+
+## coinBot US stocks
+
+Open `http://localhost:3000/coinbot`. Set **Max per trade**, **Profit target**, and **Safety stop**, then press **Start coinBot**. It watches AAPL, NVDA, TSLA, MSFT, and AMD during regular US stock market hours. A saved risk mandate on the main trading desk and Alpaca paper credentials are required. CoinBot checks the account's buying power and daily loss, the mandate's capital and position limits, its own prior outcomes, and fresh IEX prices before entering a trade. It may wait without trading. The budget must cover at least one whole share and a small price reserve.
+
+CoinBot enters with a GTC paper market bracket order, which places profit target and stop loss exit legs at Alpaca. **Pause coinBot** stops new entries; existing exit legs remain active, including overnight. **Close** requests an early exit of the bot's own shares. The chart uses Alpaca IEX minute bars or live observations and shows the last session when markets are closed. Marketaux headlines provide context for decisions, not stock prices. IEX is a subset of US exchange activity on Alpaca's Basic data plan.
+
+The bot's snapshots, orders, profit and loss, and completed trade lessons are stored in `backend/db/stockbot.sqlite3`. The bot starts paused after a fresh installation. Start it only when you intend it to place automatic **paper** orders. No live Alpaca trading client is constructed by this feature.

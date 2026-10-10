@@ -48,4 +48,5 @@ export const api = {
   coinbotStart: (config) => request('/coinbot/start', { method: 'POST', body: JSON.stringify(config) }),
   coinbotStop: () => request('/coinbot/stop', { method: 'POST' }),
   coinbotClose: () => request('/coinbot/close', { method: 'POST' }),
+  coinbotSelect: (symbol) => request(`/coinbot/select/${encodeURIComponent(symbol)}`, { method: 'POST' }),
 };

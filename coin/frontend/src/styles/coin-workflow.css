@@ -87,40 +87,11 @@
 .masthead .wordmark{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .masthead .wordmark>.coin-spinner{margin-left:0}
 .masthead .wordmark>span:last-child{margin-left:-7px}
-.coin-spinner{display:inline-block;flex:0 0 56px;width:56px;height:56px;border-radius:12px;background-color:#110b20;background-image:url('/coin-spin-sprite.jpg');background-size:557.28px 168px;background-position:-24px -60px;background-repeat:no-repeat;image-rendering:pixelated;animation:coin-sprite-spin 1.75s steps(1,end) infinite}
-@keyframes coin-sprite-spin{
-  0%{background-position:-24px -60px}
-  7.69%{background-position:-67px -60px}
-  15.38%{background-position:-112px -60px}
-  23.07%{background-position:-154px -60px}
-  30.76%{background-position:-188px -60px}
-  38.45%{background-position:-221px -60px}
-  46.14%{background-position:-252px -60px}
-  53.83%{background-position:-283px -60px}
-  61.52%{background-position:-316px -60px}
-  69.21%{background-position:-350px -60px}
-  76.90%{background-position:-392px -60px}
-  84.59%{background-position:-436px -60px}
-  92.28%{background-position:-480px -60px}
-  100%{background-position:-24px -60px}
-}
-@media(max-width:760px){.coin-spinner{flex-basis:45px;width:45px;height:45px;background-size:447px 135px;background-position:-19px -49px;animation-name:coin-sprite-spin-small}.masthead .wordmark{gap:5px}}
-@keyframes coin-sprite-spin-small{
-  0%{background-position:-19px -49px}7.69%{background-position:-54px -49px}
-  15.38%{background-position:-90px -49px}23.07%{background-position:-123px -49px}
-  30.76%{background-position:-150px -49px}38.45%{background-position:-177px -49px}
-  46.14%{background-position:-202px -49px}53.83%{background-position:-226px -49px}
-  61.52%{background-position:-253px -49px}69.21%{background-position:-280px -49px}
-  76.90%{background-position:-314px -49px}84.59%{background-position:-349px -49px}
-  92.28%{background-position:-384px -49px}100%{background-position:-19px -49px}
-}
-@media(prefers-reduced-motion:reduce){.coin-spinner{animation:none;background-position:-436px -60px}}
-@media(max-width:760px) and (prefers-reduced-motion:reduce){.coin-spinner{background-position:-349px -49px}}
 .order-risk-note{margin-top:14px;padding:9px 11px;border-left:2px solid #8fa367;background:#22291e;color:#c5d5b3;font-size:11px;line-height:1.5}
 .market-status{padding:9px 4px;color:#9da79e;font:10px/1.5 monospace}
 
 /* A single transparent frame rotates in 3D, so neighbouring sprite frames can never bleed in. */
-.coin-spinner{width:48px;height:48px;flex-basis:48px;border-radius:0;background:transparent url('/coin-logo.png') center/contain no-repeat;transform-style:preserve-3d;animation:coin-clean-spin 1.8s linear infinite}
+.coin-spinner{display:inline-block;width:48px;height:48px;flex:0 0 48px;border-radius:0;background:transparent url('/coin-logo.png') center/contain no-repeat;transform-style:preserve-3d;animation:coin-clean-spin 1.8s linear infinite}
 @keyframes coin-clean-spin{to{transform:perspective(110px) rotateY(360deg)}}
-@media(max-width:760px){.coin-spinner{width:42px;height:42px;flex-basis:42px;animation-name:coin-clean-spin}}
+@media(max-width:760px){.coin-spinner{width:42px;height:42px;flex-basis:42px}.masthead .wordmark{gap:5px}}
 @media(prefers-reduced-motion:reduce){.coin-spinner{animation:none;background-position:center}}
