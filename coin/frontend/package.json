@@ -8,15 +8,23 @@
     "start": "next start"
   },
   "dependencies": {
+    "@paper-design/shaders-react": "^0.0.81",
+    "clsx": "^2.1.1",
+    "framer-motion": "^14.1.0",
     "lucide-react": "^0.468.0",
     "next": "^16.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "recharts": "^3.0.0"
+    "recharts": "^3.0.0",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.5.23",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "^3.4.0",
+    "typescript": "^7.0.2"
   }
 }

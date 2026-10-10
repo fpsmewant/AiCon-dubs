@@ -10,7 +10,7 @@ def complete(prompt: str) -> str:
         raise RuntimeError('GROQ_API_KEY is not configured')
     response = requests.post('https://api.groq.com/openai/v1/chat/completions',
                              headers={'Authorization': f'Bearer {key}'},
-                             json={'model': os.getenv('GROQ_BEAR_MODEL', 'llama-3.3-70b-versatile'),
+                             json={'model': os.getenv('GROQ_BEAR_MODEL', 'openai/gpt-oss-20b'),
                                    'messages': [{'role': 'user', 'content': prompt}],
                                    'temperature': 0.15, 'max_tokens': 500}, timeout=(5, 25))
     response.raise_for_status()

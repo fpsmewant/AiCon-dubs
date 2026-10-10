@@ -11,6 +11,7 @@ from execution.broker_adapter import IBroker
 from intelligence.agents import bear, bull, judge
 from intelligence.data_feeds.market_data import latest_price, market_snapshot
 from intelligence.data_feeds.marketaux import cached_news
+from intelligence.rag import relevant_context
 from db import learning_memory
 from intelligence.generators import ExecutionMode, FirewallVerdict, TradeProposal, UserMandate
 from risk.firewall import RiskFirewall
@@ -25,11 +26,16 @@ _prefetch_lock = Lock()
 def _debate(symbol: str) -> dict:
     price = latest_price(symbol)
     news = cached_news(symbols=symbol, countries="", limit=5)["articles"]
-    data = {"latest_trade_price": price, "source": "Alpaca IEX latest trade", "recent_news": news}
+    memory = relevant_context(f"{symbol} US stock market company recent news historical trades", limit=3)
+    sources = {'alpaca': True, 'marketaux': len(news), 'liquid': len(memory)}
+    data = {"latest_trade_price": price, "source": "Alpaca IEX latest trade",
+            "recent_news": news, 'retrieved_memory': memory}
+    with _prefetch_lock:
+        _progress[symbol] = {'price': price, 'sources': sources}
     with ThreadPoolExecutor(max_workers=2) as pool:
         tasks = {pool.submit(bull.analyze, symbol, data): 'bull',
                  pool.submit(bear.analyze, symbol, data): 'bear'}
-        result = {"symbol": symbol, "price": price, "news": news}
+        result = {"symbol": symbol, "price": price, "news": news, 'sources': sources}
         for future in as_completed(tasks):
             side = tasks[future]
             result[side] = future.result()

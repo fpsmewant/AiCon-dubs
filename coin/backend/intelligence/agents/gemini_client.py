@@ -10,20 +10,30 @@ BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
 def complete(prompt: str, *, json_mode: bool = False, temperature: float = 0.15) -> str:
-    key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not key:
+    keys = [value for value in (os.getenv("GEMINI_API_KEY", "").strip(),
+                                os.getenv("GEMINI_API_KEY_SECONDARY", "").strip()) if value]
+    keys = list(dict.fromkeys(keys))
+    if not keys:
         raise RuntimeError("GEMINI_API_KEY is not configured")
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     generation = {"temperature": temperature, "maxOutputTokens": 1200}
     if json_mode:
         generation["responseMimeType"] = "application/json"
-    response = requests.post(
-        f"{BASE_URL}/{model}:generateContent",
-        headers={"x-goog-api-key": key, "Content-Type": "application/json"},
-        json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": generation},
-        timeout=(10, 45),
-    )
-    response.raise_for_status()
+    last_error = None
+    for key in keys:
+        try:
+            response = requests.post(
+                f"{BASE_URL}/{model}:generateContent",
+                headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": generation},
+                timeout=(5, 35),
+            )
+            response.raise_for_status()
+            break
+        except requests.RequestException as exc:
+            last_error = exc
+    else:
+        raise last_error
     parts = response.json().get("candidates", [{}])[0].get("content", {}).get("parts", [])
     text = "".join(part.get("text", "") for part in parts).strip()
     if not text:
