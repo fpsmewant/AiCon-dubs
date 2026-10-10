@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coin - Alpaca Paper Test</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; background: #f4f7fb; color: #172033; }
+      main { max-width: 620px; margin: 48px auto; padding: 24px; }
+      .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 18px #17203318; }
+      form { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+      input, button { border: 1px solid #c7d0df; border-radius: 7px; font: inherit; padding: 10px 12px; }
+      input { width: 110px; }
+      button { cursor: pointer; background: #1769e0; border-color: #1769e0; color: white; }
+      button:disabled { cursor: wait; opacity: .65; }
+      #status { min-height: 24px; white-space: pre-wrap; }
+      .error { color: #b42318; }
+      .success { color: #067647; }
+      small { color: #526176; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card">
+        <h1>Coin</h1>
+        <p>Alpaca paper-trading connectivity test</p>
+        <p><strong>Cash:</strong> <span id="cash">Loading...</span></p>
+        <p><strong>Account equity:</strong> <span id="equity">Loading...</span></p>
+        <form id="buy-form">
+          <input id="symbol" value="AAPL" maxlength="10" aria-label="Stock symbol" />
+          <input id="qty" type="number" value="1" min="1" max="10" aria-label="Quantity" />
+          <button type="submit">Buy paper stock</button>
+        </form>
+        <small>This submits a real order to the configured Alpaca paper account.</small>
+        <p id="status" role="status"></p>
+      </div>
+    </main>
+    <script>
+      const cash = document.getElementById("cash");
+      const equity = document.getElementById("equity");
+      const status = document.getElementById("status");
+      const form = document.getElementById("buy-form");
+
+      async function loadAccount() {
+        const response = await fetch("/api/account");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Could not load account");
+        cash.textContent = `$${Number(data.cash).toFixed(2)}`;
+        equity.textContent = `$${Number(data.equity).toFixed(2)}`;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = form.querySelector("button");
+        button.disabled = true;
+        status.className = "";
+        status.textContent = "Submitting order...";
+        try {
+          const response = await fetch("/api/buy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              symbol: document.getElementById("symbol").value,
+              qty: Number(document.getElementById("qty").value),
+            }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.detail || "Order failed");
+          status.className = "success";
+          status.textContent = `${data.message}\nOrder ID: ${data.order.id}`;
+          await loadAccount();
+        } catch (error) {
+          status.className = "error";
+          status.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      loadAccount().catch((error) => {
+        status.className = "error";
+        status.textContent = error.message;
+        cash.textContent = "Unavailable";
+        equity.textContent = "Unavailable";
+      });
+    </script>
+  </body>
+</html>

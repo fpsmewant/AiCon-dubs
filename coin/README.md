@@ -58,7 +58,24 @@ If a user allows a maximum loss of $50 per trade and an AI proposal requires a $
 - Frontend: React or Next.js
 - State and persistence: PostgreSQL and/or Redis
 
-## Configuration
+## Run the Alpaca paper-trading connectivity test
 
-API credentials belong in a local environment file and must never be committed. The initial scaffold intentionally contains no secrets and no implementation code.
+1. Open `coin/backend/.env.example`, copy it to `coin/backend/.env`, and replace:
+   - `ALPACA_API_KEY` with the **paper** API key from the Alpaca dashboard.
+   - `ALPACA_SECRET_KEY` with the matching **paper** secret key.
+   - Keep `ALPACA_BASE_URL=https://paper-api.alpaca.markets`.
+2. From the `coin/backend` directory, install dependencies:
 
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+
+3. Start the app:
+
+   ```powershell
+   python -m uvicorn main:app --reload
+   ```
+
+4. Open `http://127.0.0.1:8000`. The page loads the account cash/equity and has a **Buy paper stock** button. It submits a small market order to Alpaca's paper account and refreshes the account values.
+
+The API keys must be entered only in `coin/backend/.env`; do not put them in frontend files or commit that file. This test places an order in the paper account, not the live account. Buying stock changes cash and positions; Alpaca does not provide a normal "add money" deposit action through this demo endpoint.
