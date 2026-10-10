@@ -25,7 +25,8 @@ PROMPT = PromptTemplate.from_template(
 )
 
 
-def propose(symbol: str, price: float, bull: str, bear: str, news: list[dict] | None = None) -> TradeProposal:
+def propose(symbol: str, price: float, bull: str, bear: str, news: list[dict] | None = None,
+            lessons: list[dict] | None = None) -> TradeProposal:
     terms = JudgeTerms(
         judge_summary="Limited evidence: review both arguments and live price before approving a paper trade.",
         confidence_score=0.35,
@@ -35,6 +36,8 @@ def propose(symbol: str, price: float, bull: str, bear: str, news: list[dict] | 
     try:
         news_text = " | ".join(item.get("title", "") for item in (news or [])[:5]) or "No cached market news."
         prompt = PROMPT.format(symbol=symbol, price=price, bull=bull, bear=bear) + f" Cached Marketaux headlines: {news_text}"
+        if lessons:
+            prompt += f" Similar historical losses: {json.dumps(lessons)}. Lower confidence and explain why this setup may repeat those losses."
         try:
             output = gemini_complete(prompt, temperature=0.1, json_mode=True)
         except Exception:
@@ -42,6 +45,9 @@ def propose(symbol: str, price: float, bull: str, bear: str, news: list[dict] | 
         terms = JudgeTerms.model_validate(json.loads(output))
     except Exception:
         pass
+    if lessons:
+        terms.confidence_score = min(terms.confidence_score, 0.35)
+        terms.judge_summary += " Similar past market setups lost money; review this edge carefully."
     entry = round(price, 2)
     if entry <= 0.01:
         raise ValueError("Latest trade price is too small for a cent-priced bracket")

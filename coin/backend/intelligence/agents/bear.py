@@ -2,6 +2,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda
 
 from intelligence.agents.openrouter_client import complete
+from intelligence.agents.groq_client import complete as groq_complete
 
 
 PROMPT = PromptTemplate.from_template(
@@ -12,7 +13,12 @@ PROMPT = PromptTemplate.from_template(
 
 def analyze(symbol: str, market_data: dict) -> str:
     try:
-        chain = PROMPT | RunnableLambda(lambda prompt: complete(prompt.to_string()))
+        def generate(prompt):
+            try:
+                return groq_complete(prompt.to_string())
+            except Exception:
+                return complete(prompt.to_string())
+        chain = PROMPT | RunnableLambda(generate)
         return chain.invoke({"symbol": symbol, "market_data": market_data})
     except Exception:
         return "OpenRouter bear analysis unavailable or rate limited. Price can move through a stop, so realized loss can exceed the planned limit."

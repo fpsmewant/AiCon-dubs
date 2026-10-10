@@ -1,7 +1,7 @@
 import re
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from db.mandates import load_mandate, save_mandate
 from engine import orchestrator
@@ -12,6 +12,7 @@ from intelligence.data_feeds.market_data import market_summary, daily_history
 from intelligence.helpers.opportunity import rank_opportunities
 from intelligence.voice.guide import GuidePlan, INVESTING_TERMS, build_guide, invalid_plan
 from intelligence.voice.transcription import transcribe_audio
+from intelligence.voice.response import VisualAnswer, answer, mentioned_symbol
 from intelligence.data_feeds.marketaux import cached_news, sync_news
 
 
@@ -85,6 +86,41 @@ def debate(side: str, symbol: str) -> dict:
         return orchestrator.debate_side(symbol, side)
     except Exception as exc:
         raise HTTPException(status_code=502, detail='Debate could not load market data.') from exc
+
+
+@router.post('/prefetch/{symbol}')
+def prefetch_debate(symbol: str) -> dict:
+    return orchestrator.prefetch_debate(checked_symbol(symbol))
+
+
+@router.get('/debate-state/{symbol}')
+def debate_state(symbol: str) -> dict:
+    return orchestrator.debate_state(checked_symbol(symbol))
+
+
+class MentionRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=500)
+
+
+@router.post('/mention')
+def debate_mention(request: MentionRequest) -> dict:
+    symbol = mentioned_symbol(request.text)
+    return orchestrator.prefetch_debate(symbol) if symbol else {"status": "idle", "symbol": None}
+
+
+@router.post('/ask', response_model=VisualAnswer)
+def ask(request: MentionRequest) -> VisualAnswer:
+    if len(request.text) > 500:
+        raise HTTPException(status_code=422, detail='Questions must be 500 characters or less')
+    try:
+        mandate = load_mandate()
+        try:
+            broker = get_broker() if mandate else None
+        except HTTPException:
+            broker = None
+        return answer(request.text, mandate, broker)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail='Market guidance is unavailable. Please retry.') from exc
 
 
 class JudgeRequest(BaseModel):

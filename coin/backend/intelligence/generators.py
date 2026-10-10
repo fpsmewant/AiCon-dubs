@@ -10,6 +10,7 @@ class RiskStyle(str, Enum):
     balanced = "balanced"
     high_risk = "high-risk"
     capital_preservation = "capital_preservation"
+    growth = "growth"
 
 
 class ExecutionMode(str, Enum):

@@ -1,124 +1,95 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, Volume2, X } from 'lucide-react';
+import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Mic, MicOff, Volume2, X, ArrowUpRight, ShieldCheck, ShieldX } from 'lucide-react';
 import { api } from '../services/api';
 
-const STEP_LABELS = {
-  opportunities: 'Compare candidates',
-  market_news: 'Review new and stored news',
-  price_history: 'Inspect price history',
-  research: 'Run the bull / bear review',
-  risk_mandate: 'Check your risk limits',
-};
-const STEP_TARGETS = {
-  opportunities: 'opportunities',
-  market_news: 'market-news',
-  price_history: 'price-history',
-  research: 'research',
-  risk_mandate: 'risk-mandate',
-};
-
 function speak(text) {
-  if (typeof window === 'undefined' || !window.speechSynthesis || !text) return;
+  if (!window.speechSynthesis || !text) return;
   window.speechSynthesis.cancel();
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.rate = 1.02;
-  window.speechSynthesis.speak(speech);
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.rate = 1.04;
+  window.speechSynthesis.speak(voice);
 }
 
-export default function VoiceGuide({ open, onClose, opportunities, newsFilters, onSelectSymbol }) {
+export default function VoiceGuide({ open, onClose, onSelectSymbol, onDeploy, busy, canDeploy }) {
   const [recording, setRecording] = useState(false);
   const [working, setWorking] = useState(false);
   const [prompt, setPrompt] = useState('');
-  const [plan, setPlan] = useState(null);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [answer, setAnswer] = useState(null);
   const [error, setError] = useState('');
-  const recorderRef = useRef(null);
-  const streamRef = useRef(null);
-  const chunksRef = useRef([]);
-  const stopTimerRef = useRef(null);
+  const recorder = useRef(null);
+  const stream = useRef(null);
+  const chunks = useRef([]);
+  const timer = useRef(null);
 
   useEffect(() => () => {
-    clearTimeout(stopTimerRef.current);
-    streamRef.current?.getTracks().forEach(track => track.stop());
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    clearTimeout(timer.current);
+    stream.current?.getTracks().forEach(track => track.stop());
+    window.speechSynthesis?.cancel();
   }, []);
 
-  function showStep(nextPlan, index) {
-    const steps = nextPlan?.steps || [];
-    const bounded = Math.max(0, Math.min(index, steps.length - 1));
-    setStepIndex(bounded);
-    const symbol = nextPlan?.symbols?.[Math.min(bounded, nextPlan.symbols.length - 1)];
-    if (symbol) onSelectSymbol(symbol);
-    const target = document.getElementById(STEP_TARGETS[steps[bounded]]);
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  useEffect(() => {
+    if (!open || !prompt.trim()) return;
+    const timeout = setTimeout(() => api.mention(prompt).catch(() => {}), 350);
+    return () => clearTimeout(timeout);
+  }, [prompt, open]);
 
-  async function runGuide(text) {
-    const clean = text.trim();
-    if (!clean) return;
-    setWorking(true); setError(''); setPlan(null);
+  async function ask(text) {
+    if (!text.trim()) return;
+    setWorking(true); setError(''); setAnswer(null);
     try {
-      const next = await api.guide(clean, newsFilters);
-      setPlan(next); setStepIndex(0);
-      speak(next.spoken_summary);
-      if (next.valid) setTimeout(() => showStep(next, 0), 150);
-    } catch (requestError) { setError(requestError.message); }
+      const result = await api.ask(text.trim());
+      setAnswer(result);
+      if (result.ticker) onSelectSymbol(result.ticker);
+      speak(result.speech_text);
+    } catch (failure) { setError(failure.message); }
     finally { setWorking(false); }
   }
 
   function stopRecording() {
-    clearTimeout(stopTimerRef.current);
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+    clearTimeout(timer.current);
+    if (recorder.current?.state === 'recording') recorder.current.stop();
   }
 
   async function toggleRecording() {
     if (recording) { stopRecording(); return; }
-    setError(''); setPlan(null);
+    setError('');
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      setError('Microphone recording is not supported here. Type the request below.');
-      return;
+      setError('Microphone recording is unavailable. Type your question below.'); return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const preferred = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
-      const recorder = new MediaRecorder(stream, preferred ? { mimeType: preferred } : undefined);
-      streamRef.current = stream; recorderRef.current = recorder; chunksRef.current = [];
-      recorder.ondataavailable = event => { if (event.data.size) chunksRef.current.push(event.data); };
-      recorder.onstop = async () => {
-        setRecording(false);
-        stream.getTracks().forEach(track => track.stop());
-        setWorking(true);
+      const media = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const format = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+      const next = new MediaRecorder(media, format ? { mimeType: format } : undefined);
+      recorder.current = next; stream.current = media; chunks.current = [];
+      next.ondataavailable = event => { if (event.data.size) chunks.current.push(event.data); };
+      next.onstop = async () => {
+        setRecording(false); media.getTracks().forEach(track => track.stop()); setWorking(true);
         try {
-          const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-          const result = await api.transcribe(blob);
+          const result = await api.transcribe(new Blob(chunks.current, { type: next.mimeType || 'audio/webm' }));
           setPrompt(result.text);
-          await runGuide(result.text);
-        } catch (requestError) { setError(requestError.message); setWorking(false); }
+          api.mention(result.text).catch(() => {});
+          await ask(result.text);
+        } catch (failure) { setError(failure.message); setWorking(false); }
       };
-      recorder.start(); setRecording(true);
-      stopTimerRef.current = setTimeout(stopRecording, 20000);
-    } catch (mediaError) {
-      setError(mediaError?.name === 'NotAllowedError' ? 'Microphone access was denied. Allow access or type the request below.' : 'The microphone could not start. Type the request below.');
-    }
+      next.start(); setRecording(true); timer.current = setTimeout(stopRecording, 20000);
+    } catch (failure) { setError(failure?.name === 'NotAllowedError' ? 'Microphone permission was denied.' : 'The microphone could not start.'); }
   }
 
   if (!open) return null;
-  const matches = (opportunities?.candidates || []).filter(item => plan?.symbols?.includes(item.symbol));
-  const maxReturn = Math.max(1, ...matches.map(item => item.return_20d_pct));
-  const currentStep = plan?.steps?.[stepIndex];
-
-  return <div className="guide-shell" role="dialog" aria-modal="true" aria-label="Coin voice guide">
-    <div className="guide-head"><div><span className="small-label">GUIDED WORKSPACE</span><h2>Ask Coin</h2></div><button className="guide-close" onClick={onClose} aria-label="Close guide"><X size={18}/></button></div>
-    <p className="guide-copy">Ask about an amount, time horizon, stability, or stock risk. Coin will move through the relevant charts and controls.</p>
-    <button className={`guide-mic ${recording ? 'recording' : ''}`} onClick={toggleRecording} disabled={working} aria-label={recording ? 'Stop recording' : 'Start voice guide'}>{recording ? <MicOff size={22}/> : <Mic size={22}/>}<span>{recording ? 'Listening — tap to finish' : working ? 'Working…' : 'Ask with your microphone'}</span></button>
-    <form className="guide-form" onSubmit={event => { event.preventDefault(); runGuide(prompt); }}><input value={prompt} maxLength={500} onChange={event => setPrompt(event.target.value)} placeholder="Or type: How should I explore investing $100 long term?" aria-label="Guided investing request"/><button disabled={working || !prompt.trim()}>Guide me</button></form>
+  return <div className="guide-shell" role="dialog" aria-modal="true" aria-label="Ask Coin">
+    <div className="guide-head"><div><span className="small-label">COIN INTELLIGENCE</span><h2>Ask Coin</h2></div><button className="guide-close" onClick={onClose} aria-label="Close guide"><X size={18}/></button></div>
+    <p className="guide-copy">Ask about a stock, today’s market, or a specific paper trading budget.</p>
+    <button className={`guide-mic ${recording ? 'recording' : ''}`} onClick={toggleRecording} disabled={working}>{recording ? <MicOff size={21}/> : <Mic size={21}/>} {recording ? 'Listening · tap to finish' : working ? 'Building your view…' : 'Ask with your microphone'}</button>
+    <form className="guide-form" onSubmit={event => { event.preventDefault(); ask(prompt); }}><input value={prompt} maxLength={500} onChange={event => setPrompt(event.target.value)} placeholder="Should I invest $100 in Nvidia?" aria-label="Market question"/><button disabled={working || !prompt.trim()}>Explore</button></form>
     {error && <p className="guide-error" role="alert">{error}</p>}
-    {plan && <div className={`guide-result ${plan.valid ? '' : 'invalid'}`}><div className="guide-summary"><p>{plan.spoken_summary}</p><button onClick={() => speak(plan.spoken_summary)} aria-label="Read guidance aloud"><Volume2 size={17}/></button></div>
-      {plan.valid && <>{matches.length > 0 && <div className="guide-bars">{matches.map(item => { const allocation = plan.allocations?.find(value => value.symbol === item.symbol); return <button key={item.symbol} onClick={() => onSelectSymbol(item.symbol)}><span><b>{item.symbol}</b><em>20-session return {item.return_20d_pct > 0 ? '+' : ''}{item.return_20d_pct}%</em></span><i><u style={{ width: `${allocation ? allocation.percent : Math.max(5, item.return_20d_pct / maxReturn * 100)}%` }}/></i><small>{allocation ? `$${allocation.amount.toLocaleString()} of the stated budget · ${allocation.percent}% · ${allocation.fractional_shares_reference} fractional-share reference` : `Risk-sized reference: ${item.shares} shares / $${item.estimated_cost.toLocaleString()}`}</small></button>})}</div>}
-      <ul className="guide-points">{plan.key_points.map(point => <li key={point}>{point}</li>)}</ul>
-      {plan.news_points?.length > 0 && <div className="guide-news"><span className="small-label">NEWS IN THIS GUIDE</span>{plan.news_points.map(point => <p key={point}>{point}</p>)}</div>}
-      {plan.steps.length > 0 && <div className="guide-progress"><span>{stepIndex + 1} / {plan.steps.length} · {STEP_LABELS[currentStep]}</span><div><button disabled={stepIndex === 0} onClick={() => showStep(plan, stepIndex - 1)}>Back</button><button onClick={() => stepIndex === plan.steps.length - 1 ? onClose() : showStep(plan, stepIndex + 1)}>{stepIndex === plan.steps.length - 1 ? 'Finish' : 'Next insight'}</button></div></div>}</>}
+    {answer && <div className="guide-result"><div className="guide-summary"><p>{answer.speech_text}</p><button onClick={() => speak(answer.speech_text)} aria-label="Read aloud"><Volume2 size={17}/></button></div>
+      {answer.ticker && <div className="guide-asset"><div><span className="small-label">STOCK IN FOCUS</span><h3>{answer.ticker}</h3></div>{answer.requested_amount && <b>${answer.requested_amount.toFixed(2)} budget</b>}</div>}
+      {answer.chart_data?.length > 0 && <div className="guide-mini-chart" aria-label="30 day price chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={answer.chart_data}><defs><linearGradient id="guideFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#d8ed88" stopOpacity={0.3}/><stop offset="100%" stopColor="#d8ed88" stopOpacity={0}/></linearGradient></defs><Tooltip contentStyle={{background:'#171b1e',border:'1px solid #526044'}} formatter={value => [`$${Number(value).toFixed(2)}`, 'Close']}/><Area dataKey="close" stroke="#d8ed88" fill="url(#guideFill)" strokeWidth={2}/></AreaChart></ResponsiveContainer></div>}
+      <div className="guide-procon"><div><h4>Merits</h4>{answer.pros?.length ? answer.pros.map((item, i) => <p key={i}>{item}</p>) : <p>No verified upside drivers in current context.</p>}</div><div><h4>Risks</h4>{answer.cons?.length ? answer.cons.map((item, i) => <p key={i}>{item}</p>) : <p>Review volatility and market conditions.</p>}</div></div>
+      {answer.requested_amount && <div className={`guide-safety ${answer.firewall_status?.passed ? 'passed' : 'rejected'}`}>{answer.firewall_status?.passed ? <ShieldCheck size={17}/> : <ShieldX size={17}/>}<span>{answer.firewall_status?.passed ? 'Safety check passed' : answer.firewall_status?.reasons?.join(' · ')}</span></div>}
+      {answer.proposal && <button className="guide-deploy" disabled={!canDeploy || !answer.firewall_status?.passed || working || !!busy} onClick={() => onDeploy(answer.proposal)}>Deploy ${answer.requested_amount?.toFixed(2)} paper order <ArrowUpRight size={17}/></button>}
     </div>}
-    <p className="guide-note">Voice is transcribed by Groq Whisper. Guidance uses current watchlist data and never submits an order.</p>
+    <p className="guide-note">Market data and AI analysis can be incomplete. Orders use your saved limits and Alpaca paper account.</p>
   </div>;
 }

@@ -1,0 +1,37 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Coin frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"coin/frontend",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Coin backend server",
+			"type": "shell",
+			"command": "D:/AICON/.venv/Scripts/python.exe",
+			"args": [
+				"-m",
+				"uvicorn",
+				"main:app",
+				"--app-dir",
+				"coin/backend",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"8000"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

@@ -5,7 +5,7 @@ from typing import Any
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce
-from alpaca.trading.requests import LimitOrderRequest, StopLossRequest, TakeProfitRequest
+from alpaca.trading.requests import LimitOrderRequest, StopLossRequest, TakeProfitRequest, GetOrderByIdRequest
 
 from execution.broker_adapter import IBroker
 from intelligence.generators import TradeProposal
@@ -58,3 +58,14 @@ class AlpacaClient(IBroker):
 
     def cancel_order(self, order_id: str) -> None:
         self.client.cancel_order_by_id(order_id)
+
+    def get_order(self, order_id: str) -> dict:
+        order = self.client.get_order_by_id(order_id, filter=GetOrderByIdRequest(nested=True))
+        return {"status": order.status.value,
+                "filled_at": order.filled_at.isoformat() if order.filled_at else None,
+                "filled_avg_price": float(order.filled_avg_price) if order.filled_avg_price else None,
+                "filled_qty": float(order.filled_qty or 0),
+                "legs": [{"status": leg.status.value,
+                          "filled_at": leg.filled_at.isoformat() if leg.filled_at else None,
+                          "filled_avg_price": float(leg.filled_avg_price) if leg.filled_avg_price else None}
+                         for leg in order.legs or []]}

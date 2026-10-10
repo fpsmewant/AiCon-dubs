@@ -66,6 +66,25 @@ def latest_price(symbol: str) -> float:
     return price
 
 
+def market_snapshot(symbol: str, at: datetime | None = None) -> dict:
+    """Use the latest 30 minutes of IEX bars ending at the requested time."""
+    at = at or datetime.now(timezone.utc)
+    key, secret = os.getenv('ALPACA_API_KEY'), os.getenv('ALPACA_SECRET_KEY')
+    if not key or not secret:
+        raise RuntimeError('Alpaca credentials are not configured')
+    bars = StockHistoricalDataClient(key, secret).get_stock_bars(StockBarsRequest(
+        symbol_or_symbols=[symbol], timeframe=TimeFrame.Minute,
+        start=at - timedelta(minutes=30), end=at, feed=DataFeed.IEX,
+    )).data.get(symbol, [])
+    if not bars:
+        raise ValueError('No IEX minute bars available for snapshot')
+    closes = [float(bar.close) for bar in bars]
+    mean = sum(closes) / len(closes)
+    volatility = (sum((value - mean) ** 2 for value in closes) / len(closes)) ** 0.5 / mean if mean else 0
+    return {'price': closes[-1], 'volume': sum(float(bar.volume) for bar in bars),
+            'volatility': round(volatility, 6), 'as_of': bars[-1].timestamp.isoformat()}
+
+
 def daily_history(symbols: list[str], days: int = 45) -> dict:
     key, secret = os.getenv('ALPACA_API_KEY'), os.getenv('ALPACA_SECRET_KEY')
     if not key or not secret:

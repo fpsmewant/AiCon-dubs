@@ -7,6 +7,7 @@ STYLE_FRACTIONS = {
     'capital_preservation': (0.15, 0.03),
     'conservative': (0.25, 0.05),
     'balanced': (0.50, 0.10),
+    'growth': (0.65, 0.125),
     'high-risk': (0.75, 0.15),
 }
 

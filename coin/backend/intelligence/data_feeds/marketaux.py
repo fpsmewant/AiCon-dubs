@@ -2,6 +2,7 @@
 
 import os
 import re
+from threading import Thread
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -72,4 +73,12 @@ def sync_news(countries: str = "us", symbols: str = "", force: bool = False, lim
     result = cached_news(countries, symbols, limit)
     result.update({"new_count": new_count, "fetched_count": len(articles), "cache_hit": False,
                    "sync_started_at": started_at})
+    if new_count and os.getenv("LIQUID_EMBEDDING_MODEL"):
+        def index_articles():
+            try:
+                from intelligence.rag import index_market_context
+                index_market_context(result["articles"])
+            except Exception:
+                pass
+        Thread(target=index_articles, daemon=True).start()
     return result
